@@ -1,0 +1,40 @@
+#####################################################
+CI/CD in DevOps
+
+CI/CD stands for:
+1)CI – Continuous Integration
+2)CD – Continuous Delivery or Continuous Deployment
+
+These are key practices in DevOps to automate and speed up software development and delivery.
+
+1)Continuous Integration (CI)
+What it means:
+Developers frequently (daily or more) add their code to a shared codebase (like GitHub). Every time new code is added:
+-The code is automatically built
+-Automated tests run to check for bugs
+-Developers get quick feedback
+
+Why it matters:
+-Catches bugs early
+-Avoids "it works on my machine" problems
+-Makes collaboration easier
+
+2)Continuous Delivery (CD)
+What it means:
+-After CI, the tested code is automatically prepared for release. 
+This means it can be safely deployed to production at any time, but the actual release may still need a manual approval.
+
+Why it matters:
+-Faster, safer releases
+-Less stress around deployment
+-Easy rollback if needed
+
+
+#####################################################
+
+| Step                | What Happens                            |
+| ------------------- | --------------------------------------- |
+| **CI**              | Code is tested & merged automatically   |
+| **CD (Delivery)**   | Code is ready to release anytime        |
+| **CD (Deployment)** | Code is automatically released to users |
+

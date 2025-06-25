@@ -1,0 +1,255 @@
+#############################################################################
+Final List of Linux Commands with Descriptions
+#############################################################################
+Basic File & Directory Operations
+pwd – Print the current working directory.
+
+ls – List directory contents.
+
+ls -l – List with detailed file permissions, size, and ownership.
+
+ls -ld <dir> – Show details of the directory itself, not contents.
+
+ls -ltr – Long listing sorted by modification time (oldest last).
+
+mkdir <dir> – Create a new directory.
+
+mkdir -p <dir> – Create nested directories including parents.
+
+touch <file> – Create an empty file.
+
+cp <src> <dest> – Copy a file to another location.
+
+cp -r <src> <dest> – Recursively copy a directory.
+
+mv <src> <dest> – Move or rename a file or directory.
+
+rm <file> – Delete a file.
+
+rm -rf <dir> – Forcefully delete a directory and contents.
+
+cat <file> – Display contents of a file.
+
+less <file> – View file content page by page.
+
+more <file> – View file content with pagination.
+
+head <file> – Display the first 10 lines of a file.
+
+tail <file> – Display the last 10 lines of a file.
+
+tail -f <file> – Follow appending lines of a growing file.
+
+file <file> – Determine file type.
+
+echo <text> – Print text to the terminal or redirect to a file.
+
+#############################################################################
+🔍 Searching & Filtering
+grep <pattern> <file> – Search for a pattern in a file.
+
+grep -i <pattern> <file> – Case-insensitive grep search.
+
+grep -R <pattern> <dir> – Recursively search for pattern in directory.
+
+grep -vi <pattern> <file> – Exclude lines with pattern (case-insensitive).
+
+find <path> -name <pattern> – Search files and directories by name.
+
+locate <filename> – Find files quickly via an indexed database.
+
+updatedb – Update database used by locate.
+
+ls | grep <pattern> – Filter file names by pattern using grep.
+
+tail /var/log/messages | grep <pattern> – View filtered log output.
+
+#############################################################################
+🔐 User & Group Management
+whoami – Show current user.
+
+id <user> – Display user ID, group ID, and groups.
+
+useradd <user> – Create a new user.
+
+adduser <user> – Add a new user (Debian style).
+
+usermod -aG <group> <user> – Add user to a group.
+
+passwd <user> – Set or change a user password.
+
+userdel <user> – Remove a user account.
+
+userdel -r <user> – Remove user and home directory.
+
+groupadd <group> – Create a new group.
+
+groupdel <group> – Delete a group.
+
+cat /etc/passwd – View all user accounts.
+
+cat /etc/group – View all groups.
+
+grep <user> /etc/passwd – Search for a user in passwd.
+
+grep <group> /etc/group – Search for a group in group file.
+
+#############################################################################
+🛠 File Permissions & Ownership
+chown user:group <file> – Change file ownership.
+
+chown -R user:group <dir> – Recursively change ownership.
+
+chmod <mode> <file> – Change file or directory permissions.
+
+chmod o-x <dir> – Remove execute permission for others.
+
+chmod o-r <dir> – Remove read permission for others.
+
+chmod g+w <dir> – Add write permission for group.
+
+chmod 770 <dir> – Full access for owner and group only.
+
+chmod 777 <dir> – Full access to everyone.
+
+chmod 000 <dir> – No permissions to anyone.
+
+#############################################################################
+🔗 Links
+ln -s <target> <link> – Create a symbolic link.
+
+unlink <link> – Remove a symbolic link.
+
+#############################################################################
+📊 System Monitoring
+uptime – Show system uptime.
+
+free -m – Show memory usage in megabytes.
+
+df -h – Display disk space usage in human-readable format.
+
+top – Monitor real-time processes.
+
+ps aux – View all processes with user and resource info.
+
+ps -ef – Show all processes in full format.
+
+kill <PID> – Terminate a process by ID.
+
+kill -9 <PID> – Forcefully terminate a process.
+
+xargs kill -9 – Kill multiple processes in a pipeline.
+
+#############################################################################
+🧪 Text Processing
+cut -d: -f1 /etc/passwd – Extract usernames from passwd.
+
+awk -F: '{print $1}' /etc/passwd – Extract usernames using awk.
+
+sed 's/old/new/g' <file> – Replace text in output.
+
+sed -i 's/old/new/g' <file> – Replace text directly in file.
+
+wc -l <file> – Count lines in a file.
+
+ls | wc -l – Count number of items in a directory.
+
+#############################################################################
+🧾 Package Management
+yum install <package> -y – Install a package with YUM (RedHat/CentOS).
+
+yum remove <package> – Remove a package via YUM.
+
+yum upgrade – Upgrade all packages.
+
+yum search <name> – Search packages using YUM.
+
+rpm -ivh <pkg.rpm> – Install a package using RPM.
+
+rpm -e <package> – Uninstall an RPM package.
+
+rpm -qa – List all installed RPM packages.
+
+rpm --import <url> – Import GPG key for RPM packages.
+
+dpkg -i <pkg.deb> – Install a Debian package.
+
+dpkg -l – List installed packages on Debian/Ubuntu.
+
+dpkg -r <package> – Remove a Debian package.
+
+apt update – Update APT package index.
+
+apt install <pkg> – Install packages on Ubuntu/Debian.
+
+apt upgrade – Upgrade packages.
+
+apt remove <pkg> – Remove installed package.
+
+apt purge <pkg> – Remove package and config files.
+
+#############################################################################
+🌐 Networking
+curl <url> – Fetch a URL using command-line.
+
+wget <url> – Download files from the internet.
+
+hostname – Show or set system hostname.
+
+hostname <name> – Set a new hostname.
+
+#############################################################################
+🧭 System Services (systemctl)
+systemctl status <service> – Show status of a service.
+
+systemctl start <service> – Start a system service.
+
+systemctl stop <service> – Stop a service.
+
+systemctl restart <service> – Restart a service.
+
+systemctl reload <service> – Reload config without restarting.
+
+systemctl enable <service> – Enable service at boot.
+
+systemctl is-active <service> – Check if service is running.
+
+systemctl is-enabled <service> – Check if service is enabled.
+
+#############################################################################
+🧳 Archiving & Compression
+tar -czvf file.tar.gz <dir> – Create a compressed archive.
+
+tar -xzvf file.tar.gz – Extract a compressed archive.
+
+tar -xzvf <file> -C <path> – Extract archive to a directory.
+
+zip -r file.zip <dir> – Zip a directory recursively.
+
+unzip file.zip – Extract a zip file.
+
+#############################################################################
+🔒 sudo / Admin Tasks
+visudo – Safely edit the sudoers file.
+
+sudo <command> – Execute a command as another user (default root).
+
+#############################################################################
+📁 Others
+cd <dir> – Change current directory.
+
+cd – Return to home directory.
+
+clear – Clear the terminal screen.
+
+history – Show command history.
+
+tree – Display directory structure in tree format.
+
+last – Show login history.
+
+who – Show who is logged in.
+
+lsof -u <user> – Show open files by user.
+
+Let me know if you'd lik

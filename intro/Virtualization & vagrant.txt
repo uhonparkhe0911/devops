@@ -1,0 +1,58 @@
+##############################################
+
+What is Virtualization?
+
+Virtualization is the process of creating a virtual version of a computer system, including its CPU, memory, storage, and network—inside another physical machine.
+
+You can run multiple virtual machines (VMs) on one physical computer, and each VM acts like a separate computer.
+
+1)Why Use Virtualization?
+-Save money by using fewer physical machines
+-Test different operating systems or software on the same computer
+-Improve resource usage
+-Isolate environments for better security and testing
+
+2)How It Works
+A software layer called a hypervisor allows one physical machine to run many VMs.
+There are two types of hypervisors:
+-Type 1 (Bare-metal): Runs directly on hardware (e.g., VMware ESXi, Microsoft Hyper-V)
+-Type 2 (Hosted): Runs on a host OS (e.g., VirtualBox, VMware Workstation)
+
+Let’s say you're a developer on a Windows laptop but want to test your app in Linux.
+With virtualization, you can run a virtual Linux machine inside your Windows system.
+
+
+##############################################
+What is Vagrant?
+-Vagrant is an open-source tool that helps you create and manage virtual machines in a simple, repeatable, and automated way—especially for development.
+-You can think of it as a wrapper around virtualization tools like VirtualBox, VMware, or Hyper-V, making it easier to manage VMs with just a few commands.
+
+What Vagrant Does:
+-Automatically sets up virtual machines with a configuration file (Vagrantfile)
+-Makes it easy to share development environments with others
+-Ensures your app runs the same way on every developer’s machine
+
+
+##############################################
+
+How Vagrant Works (Step-by-step):
+-You write a Vagrantfile
+-Defines the OS, memory, CPU, and software your VM needs
+-Run vagrant up
+-Vagrant creates a VM using a provider (like VirtualBox)
+-Run vagrant ssh
+-You log into the VM and work as if it's a separate machine
+-Run vagrant destroy
+-Deletes the VM when you're done, without affecting your real system
+
+
+
+
+| Feature          | Virtualization              | Vagrant                                     |
+| ---------------- | --------------------------- | ------------------------------------------- |
+| **What it does** | Creates virtual machines    | Manages and automates VMs                   |
+| **User role**    | Manual setup                | Automated setup using code                  |
+| **Used with**    | VirtualBox, VMware, Hyper-V | Works **on top of** those tools             |
+| **Focus**        | System emulation            | Developer workflows and environment sharing |
+
+
