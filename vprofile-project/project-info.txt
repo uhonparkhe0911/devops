@@ -1,0 +1,107 @@
+####################################
+Architecture Overview (Layered Breakdown)
+1. Client Layer
+End users access the application via a web browser or frontend client.
+
+Requests go through a Load Balancer, which distributes them to multiple NGINX instances for scalability and fault tolerance.
+
+2. Web Layer – NGINX
+Nginx is configured as a reverse proxy and load balancer.
+
+It forwards HTTP requests to Tomcat (the application server).
+
+Acts as a reverse proxy/load balancer, routing user traffic to backend services like Tomcat.
+
+3. Application Layer – Tomcat
+Tomcat hosts the vProfile Java Web Application (built using Spring Boot or similar framework).
+
+Handles user authentication, dashboard rendering, and core business logic.
+
+Communicates with backend services like:
+MySQL for data persistence
+
+Memcache for caching
+
+RabbitMQ for async messaging
+
+4. Caching Layer – Memcache
+Memcache is used to cache frequently accessed data (e.g., user sessions, profile info).
+
+Reduces load on MySQL by storing temporary results in memory.
+
+Significantly improves response time for repeated queries
+
+5. Data Layer – MySQL
+MySQL is the primary relational database.
+
+Stores all application data like:
+
+User profiles
+
+Configuration
+
+Application state
+
+Queries are optimized and often cached by Memcache.
+
+6. Messaging Layer – RabbitMQ
+Used for decoupling services and handling asynchronous operations.
+
+Tomcat sends messages to RabbitMQ (e.g., for sending emails, logging, batch processing).
+
+Ensures that non-critical operations don't block main user requests.
+
+Useful for microservices-style architecture.
+
+#########################################################
+
+Provisioning/Setup Order
+It is critical to set up services in a logical order to avoid dependency issues:
+
+1. MySQL – The core database must be available before services depending on it start.
+
+2. Memcache – Starts early to provide caching for the app.
+
+3. RabbitMQ – Needs to be ready for asynchronous communication.
+
+4. Tomcat – The application layer comes after dependencies are ready.
+
+5. Nginx – Finally, the front-facing web service is set up to route requests to Tomcat.
+
+#########################################################
+
+Flow of Requests
+Users access the application via Nginx, which load balances the traffic.
+
+Nginx forwards requests to Tomcat (the app server).
+
+Tomcat:
+
+Fetches or stores data in MySQL.
+
+Uses Memcache to cache frequent data.
+
+Publishes tasks to RabbitMQ for asynchronous processing.
+
+RabbitMQ queues messages for background jobs.
+
+#########################################################
+
+Example Request Flow
+A user accesses the app via https://vprofile-app.com
+
+NGINX routes the request to an available Tomcat server.
+
+Tomcat:
+
+Queries Memcache for user session
+
+Falls back to MySQL if data not cached
+
+Sends a background email task to RabbitMQ
+
+Queries ElasticSearch for user activity logs
+
+Response is sent back to NGINX → User.
+
+
