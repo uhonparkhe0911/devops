@@ -5,6 +5,7 @@
 [What is Microservice](https://aws.amazon.com/microservices/)
 
 #######################################################################
+
 Monolithic Architecture
 A monolithic application is built as a single unified unit.
 
