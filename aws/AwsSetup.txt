@@ -1,0 +1,214 @@
+####################################
+
+AWS Free Tier Setup & Configuration Guide
+1. Create AWS Free Tier Account
+Visit https://portal.aws.amazon.com.
+
+2. Click “Create a Free Tier Account”.
+
+3. Enter a valid email address and account name, and verify your email.
+
+4. Create a strong root user password (use alphanumeric + special characters).
+
+5. Choose “Personal” for account type.
+
+6. Enter your contact details and credit/debit card info (a small charge ~₹2 may apply and will be refunded).
+
+7. Add your mobile number, verify it, and select the Basic (Free) Support Plan.
+
+8. Complete the signup process.
+
+Login to AWS Console:
+
+Go to https://aws.amazon.com/console and sign in as Root User.
+
+Open any service (like EC2) to check for errors. If errors persist even after verification, click the “?” Help icon, go to Support Center, and contact AWS support.
+
+####################################
+
+Secure Root User with MFA (Multi-Factor Authentication)
+1.Search for IAM in the AWS Console.
+
+2.Follow prompts to enable MFA for the root user.
+
+3. Use Google Authenticator or any MFA app:
+Click Assign MFA device > Authenticator App.
+Scan QR code via app, enter two consecutive MFA codes.
+Click Add MFA.
+
+####################################
+
+Create an IAM User (Do Not Use Root for Daily Work!)
+1. In IAM Dashboard, go to Users > Add User.
+
+2. Enter Username and select:
+
+✅ “Provide access to AWS Management Console”
+
+✅ “I want to create an IAM user”
+
+✅ Auto-generated password
+
+✅ Require password reset at first login
+
+3. Click Next > Attach policies directly > Select Administrator Access.
+
+4. Click Next > Create User.
+
+5. Download the CSV (contains login URL, username, password).
+
+####################################
+Set MFA for IAM User:
+1. Go to Users > Select user > Security credentials tab.
+
+2. Click Assign MFA device, follow same steps as root user.
+
+####################################
+Set Up Billing Alerts Using CloudWatch
+Enable Billing Alerts:
+1. Go to Billing Dashboard via the top-right account dropdown.
+2. Under Preferences:
+
+✅ Enable PDF Invoice Delivery via email.
+
+✅ Enable Free Tier Usage Alerts, add your email
+
+Create Billing Alarm:
+Ensure you're in the US East (N. Virginia) region (mandatory for billing alerts).
+
+1. Open CloudWatch > Alarms > Create Alarm.
+2. Click Select Metric > Billing > Total Estimated Charge > USD.
+3. Set a threshold (e.g., 5 USD).
+4. Create an SNS topic:
+Name: billing-alert-topic
+Add your email to receive alerts.
+5. Confirm subscription from your inbox.
+6. Name your alarm (e.g., AWS Billing Alert) and create it.
+7. Refresh until alarm state is OK and actions are enabled.
+
+####################################
+
+Validate SSL Certificate for a Domain (Optional)
+If you own a domain (e.g., via GoDaddy), you can validate it in AWS ACM:
+
+1. Search Certificate Manager (ACM) > Request a public certificate.
+
+2. Enter your domain (e.g., *.yourdomain.com) > Select DNS validation > Add a tag (optional).
+
+3. Click Request.
+
+4. In certificate list, click on your domain > Copy CNAME record (Name & Value).
+
+5. Go to your domain provider (e.g., GoDaddy):
+Open DNS Settings > Add Record:
+Type: CNAME
+Name: (Paste, remove domain suffix and trailing dot)
+Value: (Paste, remove trailing dot)
+Save the record.
+
+6. Wait for ACM to validate and status to change to ISSUED.
+
+####################################
+
+Login with IAM User
+1. In IAM > Account Alias, set a custom alias (e.g., your domain name).
+
+2. From the downloaded CSV:
+Copy the Sign-In URL.
+3. Visit the Sign-In URL:
+Enter IAM Username, Temporary Password, and MFA Code.
+Set a new password upon first login.
+
+####################################
+
+✅ Now you're logged in with your IAM user securely. Remember to always select US East (N. Virginia) region for cost-sensitive services.
+
+
+
+
+Aws Setup
+
+####################################
+Create AWS free tier account
+Launch portal.aws.amazon.com and click on create a free tier account
+Enter valid email address, account name, verify email address
+Create root user password with long alphanumeric password with symbols
+Select personal-for your own projects, update all details, add card details(might deduct 2rs max and it will be returned as well post verification)
+add mobile number and select basic/free support plan
+Complete sign up
+
+Go to AWS management console, sign in to console using AWS root user you created
+
+Check if your account is active-
+Select any service like EC2 for example and verify resources. If you are able to see the dashboard without any errors(Verify your phone, card etc) then your account is active. In case even after verifying you see errors on the dashboard then click on question mark icon ate the top and select support center, create ticket, chat with them by giving details and issue will be resolved
+
+####################################
+Create IAM user- Using the ROOT user is not recommended!
+
+Search IAM service-
+Prerequisites- IAM dashboard will ask you to setup MFA authentication for root user first. Download Google Authenticator app on your mobile
+assign MFA Device, add device name, select authenticator app, click on show QR code, open the app on mobile, click on + and scan the QR code , enter the MFA code you see on the mobile app , wait for 30 seconds and again add another MFA code you see on the app, click on Add MFA
+Once MFA device is assigned
+Go to IAM Dashboard>Users>
+
+Root user has complete access to your account and you use it to login to your AWS main account
+But for IAM user , you can control access
+Most of the time, we will be using this IAM user only for our work and it should have administrator access
+
+Click on Add Users>Give Username>Select provide access to AWS Management console(Browser based access)>Select I want to create IAM user>Select Auto generated password>Select user must create new password at next Sign in>Next>Select Attach policies directly>Select Admin access under policies>Next>Create User>Download csv file(has username and password to login to account URL(Copy the sign-in URL as well)`
+Click on Return to User List
+
+Set MFA for IAM user as well so for this>Select the user>Security credentials>Assign MFA device>Repeat same process as above
+
+####################################
+Set Billing Alarms using CloudWatch
+
+for that we need to enable some services in billing section
+To access Billing section, open profile dropdown and select Billing Dashboard>Bills>AWS Bill Summary
+Check your bills every night to confirm you have nothing/minimum there
+
+Select Billing Preferences on the left>Invoice Delivery preference>Edit>Select PDF invoices delivered by email>Update
+Select Alert Preferences>Select Receive AWS Free Tier Alerts>Add email>Update
+
+Go to Home>Search Cloud watch>
+Remember you need to be in US East North Virginia Region as it is cheapest
+Go to Alarms>All alarms>Create Alarm>Select Metric>Billing, Logs, Usage >Billing> Total estimated charge>USD>Select metric
+Just scroll down and update some value in _ USD lets say 5 USD> Next> Select an SNS topic> Create New topic>Give some name ex: Monitoring team>Add email address>Create topic
+This topic will exist in north Virginia region. 
+Next>Give Alarm Name and Description ex: AWS Billing Alerts> Next> Create Alarm
+Confirm subscription by checking your email.
+Refresh until Bill state becomes OK, Actions enabled
+
+
+####################################
+Validate Certificate for Domain( If you have purchased domain )
+
+Search ACM service> Certificate Manager> Request Certificate > Request a public certificate>Next>Give domain name in format *.domain-name
+
+Validation method> DNS validation> Add Tag> Name- domain name> Request
+Refresh certificates to see your certificates> It will be in Pending Validation State> You need to add CNAME name and CNAME value record in your domain registrar- go daddy> 
+
+
+Go to Go Daddy> Click on your domain> Quick links> Manage Domain> DNS> Add New Record > Type- CNAME name ( Copy paste, make sure you remove  domain name from the end along with full stop) > Name- value ( Copy, paste whole thing and make sure you remove full stop at the end)> Save
+
+
+AWS ACM service will check if the name resolves to the value and then validate your certificate and issue it
+
+It might take some time to change the status. Certificate status should change to ISSUED 
+
+
+####################################
+Login with IAM user
+
+Go to IAM Dashboard and select Account Alias Create>Give some name for account (similar to domain maybe) > Copy the URL
+Now go to Users>Security Credentials> Manage console access> Auto generated password> User must create new password at sign-in> Apply> Download CSV file( It should have url, username and password ) 
+
+As soon as you put this url on browser, you will be logged out from ROOT account
+Enter Account ID /alias
+Username, Password , MFA code
+Change the Password, set something valid> Confirm password change
+
+and you are done!
+Make sure you select North Virginia Region
+
+
