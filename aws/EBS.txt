@@ -1,0 +1,83 @@
+# ================================================
+# AWS EBS Volume: Attach & Partition to EC2 Instance
+# For web01 (t2.micro) – Apache Image Directory Mount
+# ================================================
+
+# 💡 What is EBS?
+Amazon EBS (Elastic Block Store) provides persistent block storage for EC2 instances.
+You can attach EBS volumes to your running instance to store data like logs, backups, or even mount it to a specific path (e.g., `/var/www/html/images/` for Apache).
+
+📌 Use-case: Attach a **new volume** to an **existing EC2 instance** and create a new partition.
+
+📌 Encryption: You can optionally skip enabling encryption when creating the volume.
+
+# 1. Create EBS Volume
+-----------------------------------------------
+Step 1: Go to EC2 Dashboard → **Elastic Block Store** → Volumes → **Create Volume**
+    - Size: 8 GiB (or as needed)
+    - Volume type: gp3
+    - Availability Zone: Must match your EC2 instance (e.g., `us-east-1a`)
+    - Encryption: ❌ Optional – you can skip it for simplicity
+Step 2: Click **Create Volume**
+
+# 2. Attach EBS Volume to EC2 Instance
+-----------------------------------------------
+Step 1: After the volume is created, select it → **Actions → Attach Volume**
+Step 2: Choose the instance: `web01`
+Step 3: Leave the default device name (e.g., `/dev/sdf` or `/dev/xvdb`)
+Step 4: Click **Attach**
+
+# 3. Connect to EC2 Instance and Prepare Volume
+-----------------------------------------------
+SSH into your instance:
+
+```bash
+ssh -i web-key.pem ec2-user@<public-ip>
+
+Step 2: Check if volume is attached:
+    lsblk, fdisk -l, df -h
+
+Step 3: Create file system (if new and unformatted):
+# Partition the new disk
+fdisk /dev/xvdb
+# Follow prompts: n → p → 1 → default start/end → w
+
+# Confirm partition created
+fdisk -l
+
+# Format the new partition
+mkfs.ext4 /dev/xvdb1
+
+Mount the new volume to required directory( ex below )
+mount /dev/xvdb1 /var/www/html/images/
+
+# Make mount persistent after reboot
+blkid /dev/xvdb1   # Note the UUID
+vi /etc/fstab      # Add the line:
+
+# Example entry:
+UUID=<uuid> /var/www/html/images ext4 defaults,nofail 0 2
+
+# 9. mount permanently and Test the fstab entry
+mount -a
+df -h
+
+##################################
+
+Steps to detach the volume
+
+1. unmount the volume
+ex- sudo umount /var/www/html/images
+
+2. Remove entry from fstab
+vi /etc/fstab and remove the entry
+
+3. Check if it's unmounted
+df -h
+
+4. Detach Volume
+Go to EC2 Dashboard → Volumes → Select volume → Actions → Detach Volume
+
+5. Delete volume (optional):
+After detaching, select volume → Actions → Delete Volume
+

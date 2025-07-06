@@ -1,0 +1,89 @@
+# ================================================
+# AWS EBS Snapshot Guide
+# Use Case: Mount new volume to /var/lib/mysql
+# ================================================
+
+# 1. Create & Attach New EBS Volume
+-----------------------------------------------
+- Create a new EBS volume (e.g., 20 GiB, gp3) in the same Availability Zone as your EC2 instance.
+- Attach it as `/dev/xvdc` to your EC2 instance `web01`.
+
+# 2. Prepare & Mount Volume
+-----------------------------------------------
+SSH into your instance:
+
+ssh -i web-key.pem ec2-user@<public-ip>
+
+Run these commands:
+
+sudo fdisk /dev/xvdc
+# In fdisk:
+# n → p → 1 → (Enter) → (Enter) → w
+
+sudo mkfs.ext4 /dev/xvdc1
+sudo mkdir -p /var/lib/mysql
+sudo mount /dev/xvdc1 /var/lib/mysql
+
+# 3. What if the Volume Gets Corrupted?
+-----------------------------------------------
+- Data in `/var/lib/mysql` will be lost or inaccessible.
+- MySQL database becomes unavailable or damaged.
+- Recovery is difficult without backups.
+
+# 4. EBS Snapshots – Why & When?
+-----------------------------------------------
+- EBS Snapshot is a point-in-time backup of your EBS volume stored in S3.
+- Snapshots are incremental and space-efficient.
+- Use snapshots to restore data after corruption, accidental deletion, or failure.
+- Snapshots enable creating new volumes from backups.
+
+# 5. Where to Check Your Snapshots
+-----------------------------------------------
+- Go to AWS Console
+- Navigate to **EC2 Dashboard**
+- In the left sidebar, under **Elastic Block Store**, click **Snapshots**
+- Here you can view, search, and manage all your EBS snapshots
+
+# 6. How to Create an EBS Snapshot (Short Steps)
+-----------------------------------------------
+- Go to EC2 Console → Volumes → Select your volume `/dev/xvdc`
+- Click **Actions** → **Create Snapshot**
+- Add description → Confirm snapshot creation
+
+# 7. How to Restore from Snapshot
+-----------------------------------------------
+- Go to EC2 Console → Snapshots → Select your snapshot
+- Click **Actions** → **Create Volume**
+- Choose the same Availability Zone as your instance
+- Create new volume from snapshot
+- Attach new volume to your instance (e.g., `/dev/xvdc`)
+- Mount it as shown before
+
+# ================================================
+Cross-Region Data Transfer with Snapshots
+You can copy snapshots to other AWS regions via AWS Console → Snapshots → Select snapshot → Actions → Copy
+
+When creating a volume from a snapshot in a different region, AWS handles the data transfer seamlessly
+
+This is useful for disaster recovery, migration, or backup purposes
+
+======================
+
+Sharing Snapshots
+Make Snapshot Public (Visible to Everyone):
+
+Go to AWS Console → Snapshots
+Select the snapshot
+Click Actions → Modify Permissions
+Select Public to make snapshot visible to all AWS users
+
+
+Share Snapshot with Specific AWS Account(s):
+Go to AWS Console → Snapshots
+Select the snapshot
+Click Actions → Modify Permissions
+Under Add account ID, enter the AWS Account ID(s) you want to share with
+Click Save
+
+⚠️ Note:
+Sharing snapshots publicly or with other accounts exposes your data, so ensure you only share snapshots without sensitive information.
