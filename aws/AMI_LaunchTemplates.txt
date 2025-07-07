@@ -1,0 +1,99 @@
+---
+
+# Steps to Create an Image/AMI of an EC2 Instance
+
+An Amazon Machine Image (AMI) is a snapshot of an EC2 instance used to launch new instances with the same configuration.
+
+## To create an AMI:
+1. Open the **EC2 Dashboard**.
+2. Select **Instances** from the left panel.
+3. Right-click on the instance or choose **Actions > Image and templates > Create image**.
+4. Provide a name and optional description for the AMI.
+5. Choose whether to **reboot the instance** (recommended to ensure a clean state).
+6. Click **Create Image**.
+7. AMI creation will begin, and you can monitor progress under **Images > AMIs**.
+
+---
+
+# Moving an Instance to Another Region using AMI
+
+If you want to move an EC2 instance from one region to another, AMI is the recommended way.
+
+## Steps:
+1. First, **create an AMI** of the instance (as described above).
+2. Go to **EC2 Dashboard > Images > AMIs**.
+3. Select the AMI, then choose **Actions > Copy AMI**.
+4. Choose the **destination region** and provide a name.
+5. Click **Copy AMI**.
+6. Switch to the destination region and launch a new instance using the copied AMI.
+
+---
+
+# Sharing or Making an AMI Public
+
+You can make an AMI:
+- **Public**: Anyone can see and launch the image.
+- **Shared**: Only specific AWS account IDs can use the AMI.
+
+## To share an AMI:
+1. Go to **EC2 Dashboard > Images > AMIs**.
+2. Select your AMI, then choose **Actions > Modify Image Permissions**.
+3. Choose:
+   - **Public** to make it available to all AWS users, or
+   - **Private** and specify AWS Account IDs to share access.
+4. Save changes.
+
+Note: You must also share associated **EBS snapshots** for the AMI to work correctly.
+
+---
+
+# Difference Between AMI and Snapshot
+
+| Feature               | AMI                                      | Snapshot                                 |
+|----------------------|------------------------------------------|------------------------------------------|
+| Purpose              | Used to launch new EC2 instances         | Backup of EBS volume                     |
+| Contents             | Includes one or more EBS snapshots plus launch configuration | Contains data from a single EBS volume   |
+| Usage Scope          | Full instance configuration (OS, data, permissions) | Only EBS volume data                    |
+| Creation Location    | From an instance                         | From a specific EBS volume               |
+| Restorability        | Used to create new instances             | Used to create new volumes               |
+
+---
+
+# Launch Templates
+
+Launch Templates in AWS allow you to predefine all instance launch settings like:
+- AMI ID
+- Instance type
+- Key pair
+- Security groups
+- User data
+- Tags
+- IAM roles
+
+They simplify launching EC2 instances consistently and are often used with **Auto Scaling**, **Spot Instances**, and **EC2 Fleet**.
+
+## Steps to Create a Launch Template:
+1. Go to the **EC2 Dashboard > Launch Templates**.
+2. Click **Create launch template**.
+3. Provide a **Template name** and optional description.
+4. Choose the **AMI**, **Instance type**, and other required settings.
+5. Configure **key pair**, **network settings**, **security groups**, and **storage volumes** as needed.
+6. Optionally add **user data** and **tags**.
+7. Click **Create launch template**.
+
+## Steps to Launch an Instance from a Launch Template:
+1. Go to **EC2 Dashboard > Launch Templates**.
+2. Select the desired template.
+3. Click **Actions > Launch instance from template**.
+4. Choose the **version** of the template (default is latest).
+5. Review or adjust any settings if needed.
+6. Click **Launch instance**.
+
+---
+
+# Summary
+
+- **AMI** is a reusable instance image that can be shared, copied across regions, or made public.
+- **Snapshots** are volume-level backups, often part of AMIs.
+- **Launch Templates** help streamline launching consistent EC2 instances with predefined settings.
+

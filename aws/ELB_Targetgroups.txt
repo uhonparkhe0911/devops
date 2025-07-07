@@ -1,0 +1,83 @@
+# Elastic Load Balancer (ELB)
+
+Elastic Load Balancer (ELB) automatically distributes incoming application traffic across multiple targets – such as EC2 instances, containers, and IP addresses – within one or more Availability Zones.
+
+## Types of ELB:
+1. **Application Load Balancer (ALB)** – Operates at Layer 7 (HTTP/HTTPS). Best suited for web applications with content-based routing.
+2. **Network Load Balancer (NLB)** – Operates at Layer 4 (TCP/UDP/TLS). Used for high performance and low latency.
+3. **Gateway Load Balancer (GWLB)** – Used to deploy and manage third-party virtual appliances, like firewalls or traffic inspection tools.
+
+---
+
+# Target Groups
+
+A Target Group is used to route requests to one or more registered targets (such as EC2 instances) based on health checks and rules.
+
+Each target group routes requests to one or more registered targets using the protocol and port number you specify.
+
+## Steps to Create a Target Group:
+1. Go to **EC2 Dashboard > Target Groups**.
+2. Click **Create target group**.
+3. **Choose target type**:
+   - Instances (register EC2 instances)
+   - IP addresses
+   - Lambda functions
+4. **Target group name**: e.g., `wavecafe-target-group`
+5. **Protocol**: HTTP or HTTPS (based on your application)
+6. **Port**: Port on which your app is listening (e.g., 80)
+7. **VPC**: Select the VPC in which your instances are running
+8. **Health checks**:
+   - **Protocol**: HTTP
+   - **Path**: `/` or a specific path like `/health`
+   - Optional: Change health check thresholds, timeout, interval, etc.
+9. Click **Next**, then **Register targets**
+10. Select the instances (e.g., `wavecafe-web01` and `wavecafe-web02`) and ports, then click **Include as pending**
+11. Click **Create target group**
+
+---
+
+# Steps to Create an Application Load Balancer (ALB):
+
+1. Go to **EC2 Dashboard > Load Balancers**
+2. Click **Create Load Balancer > Application Load Balancer**
+3. **Name**: e.g., `wavecafe-alb`
+4. **Scheme**: internet-facing (for public access) or internal
+5. **IP address type**: IPv4 or dualstack
+6. **Network mapping**:
+   - Select your **VPC**
+   - Select **all Availability Zones** (with one subnet per AZ) to make your load balancer highly available
+7. **Security groups**:
+   - Create or select a security group that allows inbound traffic on the listener port (e.g., HTTP 80)
+8. **Listeners and routing**:
+   - Protocol: HTTP
+   - Port: 80
+   - Forward to: previously created **Target Group** (e.g., `wavecafe-target-group`)
+9. **Register targets** (if not done earlier)
+10. Review and click **Create Load Balancer**
+
+After a few minutes, the ELB becomes active and starts routing traffic to healthy targets like:
+- `wavecafe-web01`
+- `wavecafe-web02`
+
+---
+
+# Troubleshooting: 504 Gateway Timeout and Unhealthy Targets
+
+If your instances return a **504 Gateway Timeout** error:
+- Make sure your **instance security group** has an **inbound rule that allows traffic from the ELB's security group** on the required port (e.g., port 80).
+- If this rule is missing, the target group health checks will fail and show **unhealthy** status for both instances.
+- After adding the ELB security group to the instance's inbound rules, the health checks will pass and your website will load successfully.
+
+---
+
+# Managing Instances in Target Group
+
+You can **add more instances** to the target group anytime if you want to scale your application.
+
+Similarly, you can **remove/deregister instances** from the target group:
+- For maintenance
+- During deployments
+- Or when you no longer need them
+
+These changes are reflected in real-time, and the ELB will automatically update its routing based on the health of the current targets.
+
