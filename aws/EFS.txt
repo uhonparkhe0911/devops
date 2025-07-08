@@ -1,0 +1,133 @@
+Amazon EFS (Elastic File System)
+
+Amazon EFS is a scalable, fully-managed, NFS-based cloud file system that can be mounted simultaneously by multiple EC2 instances.
+
+It provides a shared file storage for Linux workloads and scales automatically as files are added or removed.
+
+---
+
+EFS vs EBS – Key Differences
+
+Feature             | EBS (Elastic Block Store)            | EFS (Elastic File System)
+---------------------|--------------------------------------|----------------------------------------
+Type                | Block storage                        | Network file system (NFS)
+Attached to         | A single EC2 instance                | Multiple EC2 instances (concurrently)
+OS Compatibility    | Linux and Windows                    | Linux only
+Scalability         | Pre-defined size (resizable manually)| Automatically scales
+Performance         | High-performance SSD/HDD options     | Scales with number of clients
+Use Case            | Databases, boot volumes              | Shared storage, app config, home dirs
+Cost                | Pay for provisioned volume           | Pay per GB used
+
+---
+
+Creating Security Group for EFS (NFS Access)
+
+1. Go to VPC Dashboard > Security Groups
+2. Click Create security group
+3. Set:
+   - Name: e.g., efs-sg
+   - Description: Security group for NFS
+   - VPC: Same VPC as your EC2 instance
+4. Under Inbound rules, click Add Rule:
+   - Type: NFS
+   - Port: 2049
+   - Protocol: TCP
+   - Source: Select Custom and enter the EC2 instance security group ID
+5. Click Create security group
+
+---
+
+Create EFS File System
+
+1. Go to the Amazon EFS Console
+2. Click Create file system
+3. Enter:
+   - Name: e.g., wavecafe-efs
+   - VPC: Same as EC2 instance
+4. Click Customize to configure mount targets:
+   - One mount target per AZ/subnet will be created
+   - For each mount target, attach the EFS security group you created (efs-sg)
+5. Click Next, then Create
+
+---
+
+Creating EFS Access Point
+
+An EFS Access Point is a named entry point that enforces a specific directory path and POSIX user/group permissions for access, simplifying multi-user and container use cases.
+
+Steps to create an Access Point
+
+1. In the EFS Console, select your file system (e.g., fs-abc12345)
+2. Go to the Access Points tab
+3. Click Create access point
+4. Enter a Name (e.g., webapp-access-point)
+5. Specify Root directory path (e.g., /webapp)
+   - AWS will create this directory if it doesn’t exist
+6. Set Root directory creation permissions:
+   - Owner UID: 1000
+   - Owner GID: 1000
+   - Permissions: 755
+7. (Optional) Set POSIX user for all file system requests:
+   - UID: 1000
+   - GID: 1000
+8. Click Create Access Point
+
+---
+
+Using EFS on Amazon Linux 2 with Access Point
+
+To mount EFS, install the amazon-efs-utils package which provides the EFS mount helper and supports encryption.
+
+1. Install amazon-efs-utils
+
+sudo yum install -y amazon-efs-utils
+
+2. Create a mount directory
+
+sudo mkdir -p /mnt/efs
+
+3. Mount manually for testing (optional)
+
+sudo mount -t efs -o tls,accesspoint=fsap-xyz12345 fs-abc12345:/ /mnt/efs
+
+- Replace fs-abc12345 with your EFS File System ID
+- Replace fsap-xyz12345 with your Access Point ID
+- -o tls enables encryption in transit
+
+4. Update /etc/fstab for automatic mounting
+
+Add the following line to /etc/fstab:
+
+file-system-id:/ efs-mount-point efs _netdev,noresvport,tls,accesspoint=access-point-id 0 0
+
+Example:
+
+fs-011ac358e921d6dc7 /var/www/html/images efs _netdev,noresvport,tls,accesspoint=fsap-021e54c9357fffd11 0 0
+
+5. Mount all entries from /etc/fstab
+
+sudo mount -fav
+
+You should see output indicating the EFS was successfully mounted.
+
+6. Verify mount point
+
+df -h
+
+You should see your EFS file system listed mounted at your specified mount point.
+
+---
+
+Summary
+
+- Create a security group allowing inbound NFS (port 2049) only from your EC2 instance security group.
+- Create an EFS file system and mount targets with the correct security group.
+- Create an EFS access point to control directory root and permissions.
+- Install amazon-efs-utils on Amazon Linux 2 for mounting.
+- Configure /etc/fstab with the recommended options for automatic mounting using the EFS mount helper.
+- Use mount -fav to mount all file systems defined in /etc/fstab and verify with df -h.
+
+---
+
+Your EC2 instances can now securely mount a scalable shared file system with fine-grained access control and automatic mounting on reboot.
+

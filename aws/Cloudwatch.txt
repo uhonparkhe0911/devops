@@ -1,0 +1,103 @@
+# Amazon CloudWatch and Metrics
+
+Amazon CloudWatch is a monitoring and observability service that collects metrics, logs, and events from AWS resources and applications. It helps in visualizing system performance, setting alarms, and automating responses.
+
+---
+
+## CloudWatch Metrics
+
+Metrics are time-series data that help you track the performance of AWS resources or custom applications.
+
+### Default Metrics by AWS Services:
+
+| Service    | Metric Examples                              |
+|------------|-----------------------------------------------|
+| EC2        | CPUUtilization, NetworkIn, DiskReadOps       |
+| ELB        | RequestCount, TargetResponseTime             |
+| Lambda     | Invocations, Duration, Errors                |
+| RDS        | CPUUtilization, FreeStorageSpace             |
+| S3         | NumberOfObjects, BucketSizeBytes             |
+| DynamoDB   | ConsumedReadCapacityUnits, ThrottledRequests |
+
+Each metric includes:
+- **Namespace**: e.g., AWS/EC2
+- **Dimension**: e.g., InstanceId
+- **Timestamp**, **Value**, **Unit**
+
+---
+
+## Monitoring Tab – View CPUUtilization Graph
+
+1. Open the **EC2 Dashboard**.
+2. Click **Instances** in the left pane.
+3. Select the EC2 instance (e.g., `wavecafe-web01`).
+4. In the lower panel, click the **Monitoring** tab.
+5. View graphs for:
+   - CPUUtilization
+   - NetworkIn / NetworkOut
+   - Disk operations
+6. Hover over the graph to see usage at a point in time.
+7. Click **View in metrics** for advanced view in CloudWatch.
+
+---
+
+## AWS Default Monitoring Interval
+
+| Monitoring Type     | Interval     | Cost         |
+|---------------------|--------------|--------------|
+| Basic Monitoring    | Every 5 min  | Free         |
+| Detailed Monitoring | Every 1 min  | Paid option  |
+
+- Enable detailed monitoring via: **Actions > Monitor and troubleshoot > Enable detailed monitoring**
+
+---
+
+## Steps to Create a CloudWatch Alarm for CPU Usage
+
+1. Go to **CloudWatch > Alarms** in AWS Console.
+2. Click **Create Alarm**.
+3. Click **Select metric**.
+4. Choose:
+   - **Browse** > EC2 > Per-Instance Metrics
+   - Select your instance and **CPUUtilization**
+5. Click **Select metric** again.
+6. Define the alarm condition:
+   - Threshold type: Static
+   - Whenever CPUUtilization is **greater than 80%**
+   - For: 2 out of 3 data points
+7. Click **Next**.
+
+---
+
+## Steps to Create an SNS Topic
+
+1. Go to **SNS > Topics**.
+2. Click **Create topic**.
+3. Select **Standard** as type.
+4. Enter a **name** (e.g., `cpu-alert-topic`).
+5. Click **Create topic**.
+
+---
+
+## Add Subscription to SNS Topic
+
+1. Open the newly created topic.
+2. Click **Create subscription**.
+3. Protocol: **Email**
+4. Endpoint: Enter your email address
+5. Click **Create subscription**
+6. Check your email inbox and **confirm the subscription**
+
+---
+
+## Attach SNS Notification to CloudWatch Alarm
+
+1. In the alarm creation wizard (after setting threshold), click **Add notification**.
+2. Choose:
+   - **Send a notification to an SNS topic**
+   - Select your SNS topic (e.g., `cpu-alert-topic`)
+3. Click **Next**, add a name for the alarm (e.g., `HighCPUAlarm`)
+4. Click **Create Alarm**
+
+Now you'll be notified via email if the instance CPU exceeds the set threshold.
+

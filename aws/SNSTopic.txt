@@ -1,0 +1,43 @@
+# AWS Billing Alerts via SNS
+
+## Create SNS Topic for Billing Alerts
+
+1. Go to the Amazon SNS Console.
+2. Click "Topics" from the left sidebar.
+3. Click "Create topic".
+4. Choose "Standard" as the topic type.
+5. Enter a name: billing-alerts-topic
+6. Click "Create topic".
+
+## Create Email Subscription
+
+1. Open the topic "billing-alerts-topic".
+2. Click "Create subscription".
+3. Protocol: Email
+4. Endpoint: your-email@example.com
+5. Click "Create subscription".
+6. Check your email inbox and confirm the subscription by clicking the confirmation link.
+
+## Enable Billing Alerts in AWS
+
+1. Open the AWS Billing Dashboard: https://console.aws.amazon.com/billing/
+2. Click "Billing preferences" in the left menu.
+3. Enable the checkbox:
+   ✅ Receive Billing Alerts
+4. Click "Save preferences".
+
+## Create CloudWatch Billing Alarm
+
+1. Go to the CloudWatch Console > Alarms.
+2. Click "Create Alarm".
+3. Click "Select Metric" > Billing > Total Estimated Charge.
+4. Select the metric (usually in USD) and click "Select metric".
+5. Set the threshold (e.g., Greater than 50 USD).
+6. Click "Next".
+7. Under notifications, choose:
+   - Send notification to: billing-alerts-topic
+8. Name your alarm: BillingLimitExceeded
+9. Click "Create Alarm"
+
+# ✅ You will now receive billing alerts by email whenever your AWS charges cross the set threshold.
+
