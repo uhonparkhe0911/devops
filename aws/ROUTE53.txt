@@ -1,0 +1,107 @@
+=========================================
+AWS Route 53 - Private Hosted Zone Setup
+=========================================
+
+🔹 What is Route 53?
+---------------------
+Amazon Route 53 is a scalable and highly available Domain Name System (DNS) web service. It translates friendly domain names like `db01.vprofile.in` into IP addresses like `10.0.2.15` (private/internal IPs in a VPC).
+
+🔹 How is it similar to /etc/hosts?
+-------------------------------------
+Just like the local `/etc/hosts` file maps hostnames to IPs on a machine manually, Route 53 does this for the cloud but at a scalable and centralized level. With Route 53, services within a VPC can resolve names like `db01.vprofile.in` to private IPs dynamically.
+
+🔹 Use Case:
+-------------
+We have 4 services hosted in AWS:
+  - `db01` (MariaDB)
+  - `mc01` (Memcached)
+  - `rmq01` (RabbitMQ)
+  - `app01` (Application server)
+
+We want to create friendly DNS names for them accessible within our private network using Route 53.
+
+======================================================
+STEP 1: Create a Private Hosted Zone in Route 53
+======================================================
+
+1. Go to AWS Console → Route 53
+2. Click on "Hosted zones"
+3. Click "Create hosted zone"
+   - Domain name: `vprofile.in`
+   - Type: **Private hosted zone**
+   - Region: `us-east-1`
+   - VPC: Select your application’s VPC (example: vpc-0abcd1234ef56789)
+
+Click "Create hosted zone"
+
+======================================================
+STEP 2: Get Private IPs of the Instances
+======================================================
+
+Assume the following private IPs (from EC2 dashboard):
+
+  - db01 → 10.0.2.15
+  - mc01 → 10.0.2.16
+  - rmq01 → 10.0.2.17
+  - app01 → 10.0.2.18
+
+======================================================
+STEP 3: Create DNS Records in Hosted Zone
+======================================================
+
+For each service, follow these steps:
+
+1. Go to the `vprofile.in` hosted zone.
+2. Click "Create record".
+3. Enter the following for each record:
+
+Record 1:
+---------
+  - Record name: `db01`
+  - Record type: `A - IPv4 address`
+  - Value: `10.0.2.15`
+
+Record 2:
+---------
+  - Record name: `mc01`
+  - Record type: `A`
+  - Value: `10.0.2.16`
+
+Record 3:
+---------
+  - Record name: `rmq01`
+  - Record type: `A`
+  - Value: `10.0.2.17`
+
+Record 4:
+---------
+  - Record name: `app01`
+  - Record type: `A`
+  - Value: `10.0.2.18`
+
+======================================================
+STEP 4: Test DNS Resolution from Application Server
+======================================================
+
+1. SSH into the Ubuntu instance where your app is running:
+ssh -i my-key.pem ubuntu@<app01_public_ip>
+
+2. Run the following DNS resolution checks:
+ping -c 4 db01.vprofile.in
+ping -c 4 mc01.vprofile.in
+ping -c 4 rmq01.vprofile.in
+ping -c 4 app01.vprofile.in
+
+
+Expected result:
+Each `ping` should resolve to the correct private IP and respond if ICMP is allowed in security groups.
+
+======================================================
+Summary
+======================================================
+
+✔ Centralized DNS setup in AWS  
+✔ Easier service-to-service communication using names  
+✔ Similar to `/etc/hosts` but scalable and VPC-wide  
+✔ Tested using ping command from EC2 instances  
+

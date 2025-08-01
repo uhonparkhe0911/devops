@@ -1,0 +1,70 @@
+===========================================
+VPROFILE - MULTI-TIER WEB APPLICATION (AWS)
+===========================================
+
+🚀 PROJECT OVERVIEW
+-------------------
+Objective:
+Lift-and-shift of a multi-tier web application "vProfile" to AWS Cloud 
+for better scalability, automation, and reduced operational overhead.
+
+Deployment Strategy:
+Cloud-first with focus on IaaS (Infrastructure as a Service)
+
+Goals:
+- Pay-as-you-go pricing (no upfront capex)
+- Auto-scalability
+- Simplified infrastructure management
+- High availability
+- Automation of deployments
+
+===================================================
+🔧 AWS SERVICES USED (With Purpose)
+===================================================
+
+1. EC2 (Elastic Compute Cloud)
+   - Hosts vProfile App on Apache Tomcat
+   - Hosts backend services: MySQL, RabbitMQ, Memcache
+
+2. ELB (Elastic Load Balancer) - Application Load Balancer (ALB)
+   - Distributes traffic across tomcat servers
+   - Replaces Nginx
+   - Supports HTTPS via ACM certificate
+
+3. Auto Scaling Group (ASG)
+   - Automatically adds/removes Tomcat EC2s based on load
+   - Ensures high availability and scalability
+
+4. Amazon S3 (Simple Storage Service)
+   - Stores artifacts, static files, backups
+
+5. Amazon EFS (Elastic File System)
+   - Provides shared file system for Tomcat EC2s (if needed)
+
+6. Route 53
+   - Public Hosted Zone: Maps domain to ALB via GoDaddy
+   - Private Hosted Zone: Internal DNS resolution for backend services
+
+7. IAM (Identity & Access Management)
+   - Role-based access control
+   - Secure access to EC2, S3, EFS, etc.
+
+8. ACM (AWS Certificate Manager)
+   - Issues and manages SSL/TLS certificates
+   - Enables HTTPS on ALB
+
+9. Security Groups
+   - SG1: ALB - Allows HTTPS (443) from the internet
+   - SG2: Tomcat EC2s - Allows 8080 only from SG1
+   - SG3: Backend services - Allows only internal traffic from SG2
+
+===================================================
+💡 BENEFITS OF THIS SETUP
+===================================================
+- Fully managed infrastructure
+- Auto-scalability of application tier
+- Separation of concerns with security groups
+- Secure communication via HTTPS and private DNS
+- Cost-optimized: Pay only for what you use
+- Highly available and fault-tolerant
+

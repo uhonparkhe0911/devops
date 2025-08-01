@@ -1,0 +1,178 @@
+###############################################
+S3 BUCKET LIFECYCLE POLICY - STEP BY STEP GUIDE
+###############################################
+
+WHAT IS A LIFECYCLE POLICY?
+----------------------------
+An S3 Lifecycle policy is a set of rules that automate the transition of objects between storage classes and the deletion of objects after a specific period. It helps manage storage costs by moving data to lower-cost tiers or removing it when no longer needed.
+
+COMMON USE CASES:
+- Move data from Standard to Infrequent Access after 30 days
+- Move data to Glacier or Glacier Deep Archive after 60/90 days
+- Delete old versions or expired objects after a certain time
+
+HOW TO CREATE A LIFECYCLE POLICY?
+---------------------------------
+Follow the steps below in the AWS Management Console:
+
+STEP 1: Open the S3 Console
+---------------------------
+1. Go to https://s3.console.aws.amazon.com/s3/
+2. Select the bucket where you want to create the lifecycle rule.
+
+STEP 2: Access Management Tab
+-----------------------------
+1. Click on the "Management" tab inside the bucket.
+2. Scroll to the “Lifecycle rules” section.
+3. Click the "Create lifecycle rule" button.
+
+STEP 3: Configure Rule Details
+------------------------------
+1. Enter a rule name. Example: `TransitionToGlacier`
+2. Choose the scope:
+   - Apply to all objects in the bucket
+   - Or limit by prefix (e.g., `logs/`) or object tags
+
+STEP 4: Configure Transitions
+-----------------------------
+1. Click "Add transition"
+2. Choose:
+   - Current version or previous versions
+   - Transition to: 
+     - S3 Standard-IA
+     - S3 One Zone-IA
+     - S3 Glacier Instant Retrieval
+     - S3 Glacier Flexible Retrieval
+     - S3 Glacier Deep Archive
+3. Set the number of days after object creation to transition.
+   Example:
+     - 30 days → Standard-IA
+     - 90 days → Glacier Deep Archive
+
+STEP 5: Configure Expiration (Optional)
+---------------------------------------
+1. Click “Add expiration”
+2. Define when to permanently delete objects:
+   - Number of days after creation to delete
+   - Or delete incomplete multipart uploads
+
+STEP 6: Review and Save
+-----------------------
+1. Review the rule configuration
+2. Click "Create rule" to save
+
+EXAMPLE RULE SUMMARY:
+---------------------
+Rule Name: `ArchiveAndExpireLogs`
+Apply to: Prefix = `logs/`
+Transitions:
+  - Transition to STANDARD_IA after 30 days
+  - Transition to GLACIER after 90 days
+Expiration:
+  - Delete objects after 365 days
+  - Delete incomplete multipart uploads after 7 days
+
+NOTES:
+------
+- Lifecycle rules are applied once per day.
+- Can be used for both versioned and non-versioned buckets.
+- AWS charges for transitions and storage classes.
+
+###############################################
+S3 BUCKET REPLICATION POLICY - STEP BY STEP GUIDE
+###############################################
+
+WHAT IS S3 REPLICATION?
+------------------------
+S3 Replication enables automatic, asynchronous copying of objects across buckets in the same or different AWS regions. This is useful for:
+- Compliance
+- Disaster recovery
+- Data locality
+- Backup
+
+TYPES OF REPLICATION:
+---------------------
+1. **Cross-Region Replication (CRR)** – Replicate to a bucket in a different AWS Region
+2. **Same-Region Replication (SRR)** – Replicate to a bucket in the same AWS Region
+
+REQUIREMENTS:
+-------------
+- Source and destination buckets must be in the same AWS account or between different accounts (with proper permissions).
+- Source bucket **must have versioning enabled**.
+- Destination bucket must also have versioning enabled.
+- IAM role is required with proper permissions.
+
+HOW TO CREATE A REPLICATION POLICY (STEP BY STEP):
+--------------------------------------------------
+
+STEP 1: Enable Versioning
+--------------------------
+1. Go to S3 Console → Select your source bucket
+2. Click "Properties" → Under "Bucket Versioning"
+3. Click “Enable” if not already enabled
+
+Repeat the same for the **destination** bucket.
+
+STEP 2: Set Bucket Policy for Destination
+-----------------------------------------
+If replicating across accounts, you must add a policy to the destination bucket to allow replication. AWS provides sample policies.
+
+STEP 3: Create IAM Role (Optional)
+----------------------------------
+You can use the AWS Console to automatically create a new IAM role during setup, or specify an existing role with `s3:ReplicateObject` permissions.
+
+STEP 4: Create Replication Rule
+-------------------------------
+1. Open **source bucket** in the S3 Console
+2. Go to the **Management** tab
+3. Scroll to **Replication rules**, click **Create replication rule**
+
+STEP 5: Configure Rule Details
+------------------------------
+1. Name the rule (e.g., `ReplicateToBackupBucket`)
+2. Status: Enabled
+3. Choose scope:
+   - All objects
+   - Filter by prefix or tags
+
+STEP 6: Choose Destination
+--------------------------
+1. Choose the destination bucket
+2. Select:
+   - Same account or another account
+   - Destination region
+   - Destination bucket
+
+STEP 7: Set Permissions
+------------------------
+1. Select existing IAM role or allow S3 to create a new one
+
+STEP 8: Choose Replication Options
+-----------------------------------
+Options you can enable:
+- Replicate existing objects (if needed)
+- Replicate delete markers
+- Replicate delete operations (for versioned buckets)
+- Replicate objects encrypted with AWS KMS (optional, needs permission)
+
+STEP 9: Save the Rule
+---------------------
+1. Review your configuration
+2. Click **Save**
+
+EXAMPLE RULE SUMMARY:
+---------------------
+Rule Name: `BackupLogsCRR`
+Filter: Prefix = `logs/`
+Destination: `backup-logs-bucket` in `us-west-2`
+Replicate:
+  - New objects only
+  - Replicate delete markers
+  - Use IAM role: `s3-replication-role`
+
+NOTES:
+------
+- Replication is **asynchronous**.
+- Objects already present before replication rule creation are **not replicated by default** (unless you enable "replicate existing objects").
+- Standard S3 charges apply for replicated storage and requests.
+- Source bucket owner must have full permissions to the object to replicate it.

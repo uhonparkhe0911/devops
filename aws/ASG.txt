@@ -1,0 +1,109 @@
+########################################################
+
+What is an Auto Scaling Group (ASG)?
+An Auto Scaling Group is a service in AWS that automatically manages the number of EC2 instances based on demand. It ensures that the right number of instances are running to handle the load.
+
+
+| Term                           | Description                                                                                                                                          |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AMI (Amazon Machine Image)** | A snapshot of an EC2 instance used to launch new instances.                                                                                          |
+| **Key Pair**                   | SSH credentials to access EC2 instances securely.                                                                                                    |
+| **Launch Template**            | A configuration template for launching EC2 instances (AMI, instance type, key pair, etc.).                                                           |
+| **Load Balancer (ALB)**        | Distributes incoming traffic across EC2 instances.                                                                                                   |
+| **Target Group**               | A group of instances registered to receive traffic from a Load Balancer.                                                                             |
+| **Scaling Policy**             | Rules for when to add/remove instances.                                                                                                              |
+| **Target Tracking Policy**     | A dynamic scaling method where you specify a metric target (like CPU utilization). ASG adjusts the instance count automatically to meet that target. |
+| **Activity History**           | Logs actions performed by the ASG like scaling in or out.                                                                                            |
+
+Create a Key Pair (for EC2 access)
+Go to EC2 Dashboard → Key Pairs (left-hand menu)
+Click Create Key Pair
+Enter a name (e.g., my-key-pair)
+Select format: .pem (for Linux/Mac) or .ppk (for Windows PuTTY)
+Click Create Key Pair
+Save the file securely
+
+
+Create a Custom AMI (Optional but helpful)
+This step creates a reusable template of an EC2 instance:
+Launch a new EC2 instance (Amazon Linux 2 or Ubuntu)
+SSH into the instance using the key pair
+Install software (e.g., sudo yum install -y nginx)
+Once configured, go to EC2 → Instances, select your instance
+Click Actions → Image and templates → Create Image
+Give it a name and description, then click Create Image
+Wait until the AMI becomes available under AMIs section
+✅ You now have a pre-configured image to launch similar EC2 instances
+
+Create a Launch Template
+Go to EC2 Dashboard → Launch Templates
+Click Create launch template
+Name: my-launch-template
+Template version description: v1
+AMI: Choose the custom AMI created earlier (or select from public ones)
+Instance type: e.g., t2.micro
+Key pair: Select my-key-pair
+Network settings: Select a security group allowing HTTP (port 80) and SSH (port 22)
+User data (optional): Add a script like installing nginx or app setup
+Click Create launch template
+
+Create a Target Group
+Go to EC2 Dashboard → Target Groups
+Click Create target group
+Target type: Instances
+Protocol: HTTP, Port: 80
+VPC: Select your VPC
+Name: my-target-group
+Health checks: Leave default or customize
+Click Next, then skip register targets (ASG will handle it), and click Create target group
+
+Create an Application Load Balancer (ALB)
+Go to EC2 Dashboard → Load Balancers
+Click Create Load Balancer → Application Load Balancer
+Name: my-alb
+Scheme: Internet-facing
+IP address type: IPv4
+Listeners: Add listener on port 80 (default)
+Availability Zones: Select subnets from at least two different AZs
+Security group: Must allow inbound HTTP (port 80)
+Routing:
+Target group: my-target-group
+Click Create Load Balancer
+
+Create the Auto Scaling Group (ASG)
+Go to EC2 Dashboard → Auto Scaling Groups
+Click Create Auto Scaling group
+Name: my-auto-scaling-group
+Launch template: Select my-launch-template and version
+Instance type: Use default from template
+Network: Choose your VPC and subnets (match ALB)
+Load balancing: Enable it
+Select Attach to an existing load balancer
+Choose Application Load Balancer
+Select listener and target group: my-target-group
+Group size:
+Desired capacity: 1 (initial)
+Min: 1, Max: 3 (or more as needed)
+Scaling policies:
+Choose Target tracking scaling policy
+Policy name: scale-on-cpu
+Metric type: Average CPU utilization
+Target value: e.g., 50%
+Click Create Auto Scaling group
+
+Important ASG Sections
+1. Activity History
+Shows logs of scaling events: instance launches, terminations, errors.
+Helps debug ASG behavior.
+Found in ASG details under Activity tab.
+2. Instances
+Shows currently running instances under this ASG.
+Instances here are automatically created or removed by ASG.
+3. Scaling Policies
+Displays current policies like target tracking.
+You can add multiple policies here, e.g., schedule-based or step scaling.
+4. Monitoring
+CloudWatch metrics: CPU utilization, group size, health check failures, etc.
+Set alarms if needed.
+
+
