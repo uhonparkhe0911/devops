@@ -1,0 +1,80 @@
+------
+AWS S3 Deployment Architecture with EC2 and Maven
+------
+
+Overview
+This document outlines the architecture for artifact deployment using AWS S3 and EC2, detailing components, interactions, and setup steps.
+
+------
+
+1. S3 Bucket (AWS Cloud)
+Amazon S3 is an object storage service used to store build artifacts (e.g., WAR/JAR files), which are uploaded from a local machine and downloaded by EC2 during deployment.
+
+------
+
+2. Developer Machine (Local System)
+Tools: Maven (builds Java artifacts), AWS CLI (uploads to S3)
+Authentication: IAM Access Keys
+
+Steps:
+mvn clean package
+aws s3 cp target/app.war s3://your-bucket-name/
+
+------
+
+3. IAM Authentication
+
+A. IAM Keys Authentication
+- Uses Access Key ID & Secret Access Key.
+- Configured with: aws configure
+
+Use Case: Developer uploads artifact to S3.
+
+Steps to Create IAM User `vprofile-s3-admin`:
+1. IAM Console > Users > Add users
+2. Username: vprofile-s3-admin
+3. Select Programmatic access
+4. Attach policy: AmazonS3FullAccess
+5. Create user & download `.csv` credentials
+6. Configure CLI with: aws configure
+
+B. IAM Roles Authentication
+- Roles allow EC2 to access AWS services without storing credentials.
+- Temporary credentials are auto-rotated.
+
+Use Case: EC2 pulls artifacts from S3.
+
+Steps to Create IAM Role `s3-admin`:
+1. IAM Console > Roles > Create Role
+2. Trusted entity: EC2
+3. Attach policy: AmazonS3FullAccess
+4. Name role s3-admin and create it
+
+Attach Role to EC2:
+1. EC2 Console > Select instance
+2. Actions > Security > Modify IAM Role
+3. Choose s3-admin and update
+
+------
+
+4. EC2 Instance (Tomcat Server)
+Purpose: Hosts Tomcat, pulls artifacts from S3
+
+Steps:
+# Launch Amazon Linux 2 EC2 instance
+sudo yum install java -y
+wget https://downloads.apache.org/tomcat/... 
+aws s3 cp s3://your-bucket-name/app.war /opt/tomcat/webapps/
+./startup.sh
+
+------
+
+Summary
+1. Developer builds app with Maven
+2. Uploads artifact to S3 using IAM keys
+3. EC2 with Tomcat assumes s3-admin IAM role
+4. EC2 pulls artifact from S3 and deploys it
+
+------
+
+This setup enables secure, streamlined CI/CD using AWS-native services.
