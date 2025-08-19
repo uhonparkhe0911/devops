@@ -1,0 +1,98 @@
+-------------------------------------------------------------
+What is Continuous Integration?
+Continuous Integration (CI) is a software development practice where developers frequently integrate their code changes into a shared repository, usually multiple times a day. Each integration is automatically verified by running automated tests and build processes.
+-------------------------------------------------------------
+
+Problems CI Solves
+1.Integration Issues – Reduces conflicts when merging code by encouraging frequent integrations.
+2.Bug Detection – Automates testing, allowing early detection of bugs.
+3.Faster Feedback – Developers receive quick feedback on code quality and build status.
+4.Deployment Readiness – Ensures the software is always in a deployable state.
+5.Reduced Manual Work – Automates builds and tests, minimizing manual errors.
+-------------------------------------------------------------
+Continuous Integration Process Flow Diagram
+
+Developer Commits Code
+         ↓
+Version Control System (e.g., Git)
+         ↓
+CI Server (e.g., Jenkins)
+         ↓
+• Run Automated Tests
+• Build the Code
+• Generate Reports
+         ↓
+Notify Developer (Success/Fail)
+
+------------------------------------------------------------
+Explanation of the CI Process
+1.A developer pushes code to a version control repository.
+2.A CI server detects this change and pulls the new code.
+3.The server then builds the code and runs automated tests.
+4.Results (pass/fail) are shared with the team.
+5.This cycle repeats with every commit, ensuring continuous code health.
+------------------------------------------------------------
+
+CI Tools
+1.Jenkins (most popular)
+2.GitLab CI
+3.Travis CI
+4.CircleCI
+5.Bamboo
+6.TeamCity
+
+------------------------------------------------------------
+What is Jenkins?
+Jenkins is an open-source automation server widely used for Continuous Integration/Continuous Deployment (CI/CD). It helps automate parts of software development related to building, testing, and deploying.
+
+Key Features
+1.Open-source and extensible
+2.Supports distributed builds
+3.Wide plugin ecosystem
+4.Easy integration with version control systems
+5.Real-time build monitoring
+6.Scriptable pipeline support
+
+-----------------------------------------------------------
+Important Plugins for DevOps
+1.Git plugin
+2.Pipeline plugin
+3.Blue Ocean (modern UI)
+4.Docker plugin
+5.GitHub plugin
+6.SonarQube plugin
+7.Slack Notification plugin
+8.Kubernetes plugin
+------------------------------------------------------------
+Jenkins Server Details
+1.Default Port: 8080
+2.Home Directory:
+3.Linux: /var/lib/jenkins
+4.Windows: %JENKINS_HOME%
+5.Initial Admin Password:
+6.File: /var/lib/jenkins/secrets/initialAdminPassword
+7.Configuration File:
+config.xml – stores global Jenkins configuration
+------------------------------------------------------------
+Jenkins is Extensible
+Jenkins is highly extensible via its plugin ecosystem, allowing integration with numerous tools.
+
+Supports advanced custom workflows using Groovy-based pipelines.
+
+------------------------------------------------------------
+Creator
+Jenkins was created by Kohsuke Kawaguchi (originally called Hudson).
+
+Jenkins Official URL
+https://www.jenkins.io
+-----------------------------------------------------------
+Important Options Under “Manage Jenkins”
+1.Global Tool Configuration
+2.Manage Plugins
+3.Configure System
+4.Manage Nodes and Clouds
+5.Script Console
+6.Security Settings
+7.System Logs
+
+

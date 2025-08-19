@@ -1,0 +1,121 @@
+**Jenkins Job Configuration - Key Features and Plugins**
+
+This document outlines key capabilities and plugins used in Jenkins jobs to enhance automation, artifact handling, deployment, and tracking.
+
+---
+
+**1. Source Code Management via Git**
+
+Jenkins allows you to integrate Git repositories as the source for your builds:
+- Navigate to **"Source Code Management"** section.
+- Select **Git**.
+- Enter your repository URL (e.g., `https://github.com/user/repo.git`).
+- Add credentials if it's a private repo.
+- You can also specify branches (e.g., `*/main`).
+
+---
+
+**2. Invoke Top-Level Maven Target Plugin**
+
+To build a Maven project:
+- Add a build step: **Invoke top-level Maven targets**.
+- Goal: `clean install`
+- This cleans previous builds and compiles the latest code.
+- Requires Maven to be installed and configured in **Global Tool Configuration**.
+
+---
+
+**3. Post-build Actions**
+
+- **Archive Artifacts**:
+  - Specify pattern: `**/*.war`
+  - Saves .war files from build workspace for download and reuse.
+
+- **Email Notifications**:
+  - Requires Email Extension Plugin.
+  - Configure SMTP in **Manage Jenkins → Configure System**.
+  - Can notify on build success/failure/unstable status.
+
+---
+
+**4. "Copy from" Option**
+
+In job configuration:
+- Use **"Copy existing item"** when creating a new job.
+- Enter an existing job name to duplicate its configuration.
+- Useful for standardizing job setups.
+
+---
+
+**5. Plugins in Jenkins**
+
+- **Available**: Shows all downloadable plugins.
+- **Installed**: Displays already installed plugins.
+- **Advanced**:
+  - Upload custom plugin `.hpi` files.
+  - Configure update URLs.
+
+Path: **Manage Jenkins → Manage Plugins**
+
+---
+
+**6. S3 Publisher Plugin**
+
+- Allows publishing build artifacts (e.g., .war, .jar) to AWS S3.
+- Add **"Publish artifacts to S3 Bucket"** as a post-build action.
+- Configure bucket, region, and credentials.
+- Supports file inclusion/exclusion patterns.
+
+---
+
+**7. Execute Shell - Versioning WAR File with Variables**
+
+Example shell command:
+```bash
+echo "Deploying build..."
+mkdir -p build_output
+cp target/*.war build_output/app-$BUILD_ID.war
+```
+
+Common Jenkins Environment Variables:
+- `BUILD_ID`: Unique build identifier
+- `BUILD_NUMBER`: Sequential build number
+- `JOB_NAME`: Job’s name
+- `WORKSPACE`: Absolute path to job’s workspace
+- `GIT_COMMIT`: Git commit hash (if Git is used)
+- `BUILD_URL`: Link to current build page
+
+---
+
+**8. Parameterized Builds - Custom Version Parameter**
+
+- Enable **"This project is parameterized"**.
+- Add **String Parameter**:
+  - Name: `VERSION`
+  - Default Value: `1.0.0`
+
+Use in Execute Shell:
+```bash
+cp target/*.war build_output/app-$VERSION.war
+```
+
+---
+
+**9. Storing Artifacts with Timestamps**
+
+- Use **Build Timestamp Plugin** to generate readable timestamps.
+- Go to **Manage Jenkins → Configure System** → Set timestamp format.
+
+Available variable:
+- `${BUILD_TIMESTAMP}`
+
+Example usage:
+```bash
+cp target/*.war build_output/app-${BUILD_TIMESTAMP}.war
+```
+
+This helps keep versioning clean, especially when triggering builds frequently.
+
+---
+
+These features collectively improve build traceability, job reusability, artifact versioning, and post-build management in Jenkins.

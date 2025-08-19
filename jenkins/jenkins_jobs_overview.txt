@@ -1,0 +1,94 @@
+**Jenkins Jobs Overview**
+
+Jenkins is a popular open-source automation server used to build, test, and deploy applications. Jobs in Jenkins are the core units where tasks are configured and executed. Jenkins jobs automate various stages of software development, including building code, generating artifacts, testing, and deploying to environments.
+
+---
+
+**How Jenkins Jobs Are Utilized**
+
+1. **Build:** Pull source code from a repository (like Git) and compile/build it using tools like Maven, Gradle, etc.
+2. **Test:** Run unit tests, integration tests, or UI tests.
+3. **Package:** Generate artifacts like .jar, .war, or .zip files.
+4. **Deploy:** Push builds to test, staging, or production environments.
+5. **Notify:** Send notifications to teams via email, Slack, etc.
+
+Jenkins jobs can be scheduled or triggered manually, by SCM changes, or automatically after upstream builds.
+
+---
+
+**What is Workspace Directory?**
+
+The **workspace directory** in Jenkins is the file system location on the Jenkins server where the source code is checked out and the build runs. Each job has its own dedicated workspace. Typical operations (like compiling code, running scripts, or generating artifacts) occur inside this workspace.
+
+Path Example:
+```
+/var/lib/jenkins/workspace/<job-name>
+```
+
+---
+
+**Steps to Create a Basic Jenkins Job**
+
+1. **Login to Jenkins Dashboard**
+2. Click on **"New Item"** on the left menu.
+3. Enter an item name (e.g., `basic-job`), select **"Freestyle project"**, and click **OK**.
+
+---
+
+**Jenkins Job Configuration Sections**
+
+1. **General:**
+   - Description: Provide a brief explanation of the job.
+   - Discard old builds: Limit the number of stored builds.
+
+2. **Source Code Management:**
+   - Configure Git/SVN URL if pulling code from SCM.
+
+3. **Build Triggers:**
+   - Options include Poll SCM, Build periodically, or Trigger builds remotely.
+
+4. **Build Environment:**
+   - Options for setting up environments, like deleting workspace before build or using credentials.
+
+5. **Build Steps:**
+   - Add a **"Execute shell"** step for Linux/macOS or **"Execute Windows batch command"** for Windows.
+
+   **Example: Execute Shell Step**
+   ```bash
+   echo "Running basic shell commands"
+   whoami
+   pwd
+   w
+   id
+   ```
+
+6. **Post-build Actions:**
+   - Archive artifacts (e.g., *.jar, *.war)
+   - Send notifications
+   - Trigger other jobs
+
+---
+
+**Configure and Run a Jenkins Job**
+
+- After setting up the job configuration, click **Save**.
+- To trigger the job, go to the job's page and click **Build Now**.
+- The build will be queued and executed.
+- You can monitor progress by clicking on the build number under **Build History**, then selecting **Console Output**.
+
+---
+
+**Build Health and Job Monitoring**
+
+Jenkins provides visual indicators for build status:
+
+- **Blue/Green/Success icon:** Build passed
+- **Red icon:** Build failed
+- **Yellow icon:** Unstable (some tests failed or warnings)
+- **Grey icon:** Not built yet
+
+Build health is shown on the job's main page. You can configure thresholds for success/failure in post-build actions or plugins.
+
+---
+
+This basic setup helps you get started with Jenkins automation. Over time, jobs can be enhanced with parameters, pipelines, and integrations with deployment tools.

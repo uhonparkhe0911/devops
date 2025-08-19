@@ -1,2 +1,4 @@
 # Ignore Vagrant environment files
 .vagrant/
+.terraform/
+*.exe
