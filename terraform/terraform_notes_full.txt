@@ -1,0 +1,228 @@
+Terraform Concepts & Examples
+
+1. Basics of Terraform
+----------------------
+Terraform is an Infrastructure as Code (IaC) tool that allows you to define and manage infrastructure using configuration files. It works with many providers (AWS, Azure, GCP, etc.).
+
+Execution Flow:
+1. terraform init → Initializes provider plugins.
+2. terraform plan → Shows what will be created/modified/destroyed.
+3. terraform apply → Executes the changes.
+4. terraform destroy → Removes all resources.
+
+Example: Basic EC2 instance (main.tf)
+-------------------------------------
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+}
+
+
+2. Variables in Terraform
+--------------------------
+Variables allow you to parameterize configurations for flexibility.
+
+variables.tf
+-------------
+variable "region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "instance_type" {
+  description = "Type of EC2 instance"
+  type        = string
+  default     = "t2.micro"
+}
+
+main.tf
+--------
+provider "aws" {
+  region = var.region
+}
+
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = var.instance_type
+}
+
+terraform.tfvars
+-----------------
+region        = "us-west-2"
+instance_type = "t2.small"
+
+
+3. Provisioners in Terraform
+-----------------------------
+Provisioners help execute scripts or commands inside resources (mostly EC2).
+
+Example: Using Provisioner
+---------------------------
+resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update -y",
+      "sudo apt-get install nginx -y"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("~/.ssh/id_rsa")
+      host        = self.public_ip
+    }
+  }
+}
+
+
+4. Outputs in Terraform
+------------------------
+Outputs expose information about created resources (like public IPs, ARNs).
+
+outputs.tf
+-----------
+output "instance_ip" {
+  description = "Public IP of EC2"
+  value       = aws_instance.example.public_ip
+}
+
+output "instance_id" {
+  description = "EC2 Instance ID"
+  value       = aws_instance.example.id
+}
+
+Command to view outputs:
+terraform output instance_ip
+
+
+5. Important Terraform Commands
+-------------------------------
+terraform init        → Initialize Terraform and download providers
+terraform plan        → Preview changes
+terraform apply       → Apply changes to infrastructure
+terraform destroy     → Destroy resources
+terraform validate    → Check syntax & correctness
+terraform fmt         → Format files properly
+terraform show        → Show current state details
+terraform state list  → List resources in state
+
+
+6. Backend - S3 (Remote State)
+-------------------------------
+By default, Terraform stores state locally (terraform.tfstate). In teams, remote backend (S3 + DynamoDB) is used.
+
+backend.tf
+-----------
+terraform {
+  backend "s3" {
+    bucket         = "my-terraform-state-bucket"
+    key            = "dev/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-lock"
+    encrypt        = true
+  }
+}
+
+Steps:
+1. Create an S3 bucket → my-terraform-state-bucket
+2. Create DynamoDB table → terraform-lock (with primary key LockID)
+3. Terraform state will be stored in S3 and locked using DynamoDB
+
+
+7. Setting up AWS for Terraform
+--------------------------------
+To allow Terraform to interact with AWS, configure the AWS CLI with Access Keys.
+
+Step 1: Install AWS CLI
+------------------------
+- On Linux:
+  sudo apt-get install awscli -y
+
+- On Mac:
+  brew install awscli
+
+- On Windows:
+  Download installer from AWS official site.
+
+Step 2: Configure AWS CLI with your credentials
+------------------------------------------------
+Run:
+aws configure
+
+It will ask for:
+AWS Access Key ID     [Your access key from AWS IAM]
+AWS Secret Access Key [Your secret key from AWS IAM]
+Default region name   [e.g., us-east-1]
+Default output format [json]
+
+Step 3: Verify configuration
+-----------------------------
+Run:
+aws s3 ls
+
+If it lists your S3 buckets, the setup is successful.
+
+Step 4: Use Terraform with AWS provider
+---------------------------------------
+provider "aws" {
+  region = "us-east-1"
+}
+
+Terraform will automatically use the credentials stored in ~/.aws/credentials
+
+
+8. Terraform State and State File
+----------------------------------
+Terraform keeps track of all resources it manages using a state file. This file is essential for mapping real-world infrastructure to your configuration.
+
+- Default state file: terraform.tfstate (stored locally)
+- Backup state file: terraform.tfstate.backup
+
+Purpose of the state file:
+1. Keeps record of all created resources and their attributes.
+2. Allows Terraform to know what already exists to avoid duplicate creation.
+3. Used during plan/apply/destroy to compare desired vs actual infrastructure.
+
+Important commands related to state:
+-------------------------------------
+terraform state list        → Lists all resources tracked in the state
+terraform state show <res>  → Shows attributes of a resource
+terraform refresh           → Updates state with real infrastructure
+terraform state rm <res>    → Removes resource from state (without destroying it)
+
+Best Practices:
+---------------
+1. Do not edit terraform.tfstate manually.
+2. Use remote state (like S3 + DynamoDB) for team collaboration.
+3. Enable state locking to avoid concurrent modifications.
+
+Example of state file snippet (simplified):
+-------------------------------------------
+{
+  "version": 4,
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "aws_instance",
+      "name": "example",
+      "instances": [
+        {
+          "attributes": {
+            "id": "i-1234567890abcdef0",
+            "ami": "ami-0c55b159cbfafe1f0",
+            "instance_type": "t2.micro",
+            "public_ip": "34.201.12.45"
+          }
+        }
+      ]
+    }
+  ]
+}
