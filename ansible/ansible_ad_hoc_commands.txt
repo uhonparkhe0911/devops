@@ -1,0 +1,78 @@
+Ansible Ad Hoc Commands
+
+Ansible is a powerful open-source configuration management and automation tool. One of its key features is idempotency.
+
+What is Idempotency?
+Idempotency means that Ansible ensures the system reaches and maintains a desired state. If a task has already been completed, running it again will not repeat or duplicate the action. For example, if a package is already installed, Ansible will not reinstall it unnecessarily. This makes it reliable and consistent for configuration management.
+
+What Are Ad Hoc Commands?
+Ad hoc commands in Ansible are one-time tasks that can be executed directly from the command line without writing a playbook. They are useful for quick fixes, testing, or troubleshooting across multiple servers.
+
+Basic syntax:
+ansible <host-pattern> -m <module> -a "<arguments>" -i <inventory> [--become]
+
+- <host-pattern>: Target group or host defined in the inventory file.
+- -m <module>: The module you want to use (e.g., ping, apt, yum, service, copy).
+- -a "<arguments>": Arguments passed to the module.
+- -i <inventory>: Inventory file listing the hosts.
+- --become: Run with elevated privileges (sudo).
+
+State: present vs absent
+Many Ansible modules use the state parameter to define what you want to happen.
+
+- present → Ensures that something exists.
+  For packages: installed
+  For services: running/enabled
+  For files: created
+
+- absent → Ensures that something does not exist.
+  For packages: uninstalled
+  For services: stopped/disabled
+  For files: deleted
+
+Examples:
+- Install Apache (Debian/Ubuntu):
+  ansible webservers -m apt -a "name=apache2 state=present" -i inventory --become
+
+- Remove Apache (Debian/Ubuntu):
+  ansible webservers -m apt -a "name=apache2 state=absent" -i inventory --become
+
+- Create a file:
+  ansible all -m file -a "path=/tmp/hello.txt state=present" -i inventory
+
+- Delete a file:
+  ansible all -m file -a "path=/tmp/hello.txt state=absent" -i inventory
+
+Running with sudo → Using become
+Some tasks require root privileges, such as installing packages or starting services. Instead of typing sudo, Ansible uses the --become flag.
+
+- --become (or -b): Run the task as root (default).
+- You can also specify --become-user=<user> if needed.
+
+Examples:
+- Install curl:
+  ansible webservers -m apt -a "name=curl state=present" -i inventory --become
+
+- Restart nginx service:
+  ansible webservers -m service -a "name=nginx state=restarted" -i inventory --become
+
+Useful Ad Hoc Command Examples
+1. Test Connectivity
+   ansible all -m ping -i inventory
+
+2. Start and Enable httpd Service (CentOS/RHEL)
+   ansible webservers -m service -a "name=httpd state=started enabled=yes" -i inventory --become
+
+3. Copy a File to Remote Hosts
+   ansible all -m copy -a "src=/home/ubuntu/test.txt dest=/tmp/test.txt" -i inventory
+
+Ad Hoc vs Playbooks
+- Ad Hoc Commands → Best for quick, one-time tasks.
+- Playbooks → Best for long-term automation and maintaining configuration states.
+
+Summary
+- Ansible is idempotent — it maintains state without repeating tasks unnecessarily.
+- Ad hoc commands let you quickly run modules across servers.
+- present ensures something exists, absent ensures it is removed.
+- --become provides root privileges for administrative tasks.
+- Examples include installing packages, starting services, and copying files.

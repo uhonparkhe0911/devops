@@ -1,0 +1,112 @@
+Ansible Inventory File - Key Points
+
+1. What is an Inventory File?
+-----------------------------
+- Defines the hosts (managed nodes) on which Ansible executes tasks.
+- Can be static (INI/YAML file) or dynamic (scripts, cloud plugins).
+- Default location: /etc/ansible/hosts
+  (Better practice: create a custom inventory and pass with -i flag)
+
+------------------------------------------------------------
+
+2. Creating an Inventory File
+-----------------------------
+You can create in either INI or YAML formats.
+
+Example - INI Format:
+[web]
+web01 ansible_host=192.168.1.10 ansible_user=ubuntu ansible_port=22
+web02 ansible_host=192.168.1.11
+
+[db]
+db01 ansible_host=192.168.1.20
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+
+
+Example - YAML Format:
+all:
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  children:
+    web:
+      hosts:
+        web01:
+          ansible_host: 192.168.1.10
+          ansible_user: ubuntu
+        web02:
+          ansible_host: 192.168.1.11
+    db:
+      hosts:
+        db01:
+          ansible_host: 192.168.1.20
+
+------------------------------------------------------------
+
+3. Common Host Variables
+-------------------------
+- ansible_host → Actual IP/hostname if alias is used.
+- ansible_user → SSH user.
+- ansible_port → Custom SSH port.
+- ansible_ssh_private_key_file → Private key path.
+- ansible_connection → Connection type (ssh, local, winrm).
+- ansible_python_interpreter → Python path on remote host.
+
+Example:
+web01 ansible_host=10.0.0.5 ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+------------------------------------------------------------
+
+4. Group Variables
+-------------------
+Define variables common to a group.
+
+INI Format:
+[web:vars]
+ansible_user=ubuntu
+ansible_python_interpreter=/usr/bin/python3
+
+YAML Format:
+web:
+  vars:
+    ansible_user: ubuntu
+    ansible_python_interpreter: /usr/bin/python3
+
+------------------------------------------------------------
+
+5. Special Keywords in Inventory
+---------------------------------
+- all → Represents all hosts.
+- children → Define subgroups inside a group.
+- :vars or vars → Group-level variables.
+- ! → Exclude a host/group.
+- :children → Group of groups.
+
+Example:
+[prod:children]
+web
+db
+
+[prod:vars]
+env=production
+
+------------------------------------------------------------
+
+6. Usage
+---------
+Run commands/playbooks with a specific inventory:
+
+ansible -i inventory.ini all -m ping
+ansible -i inventory.yaml web -m ping
+ansible-playbook -i inventory.ini site.yml
+
+------------------------------------------------------------
+
+Quick Summary
+-------------
+- Inventory = list of managed hosts.
+- Formats: INI & YAML (YAML preferred for complex setups).
+- Variables: Host-level, group-level, global-level.
+- Keywords: all, children, vars.
+- Best Practice: Use custom inventory instead of default /etc/ansible/hosts
