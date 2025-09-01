@@ -1,0 +1,135 @@
+Ansible Complete Configuration Guide
+
+---
+
+## 1️⃣ Order of Configuration Files
+
+Ansible applies configuration files in the following order (highest priority first):
+
+1. \$ANSIBLE\_CONFIG environment variable
+2. ./ansible.cfg in the current working directory
+3. \~/.ansible.cfg in the home directory
+4. /etc/ansible/ansible.cfg system-wide default
+
+The last file found in this order overrides the previous ones.
+
+---
+
+## 2️⃣ Inventory & Hosts
+
+* Defines target machines.
+* Example:
+
+all:
+hosts:
+web01:
+ansible\_host: 172.31.28.42
+ansible\_user: ubuntu
+ansible\_ssh\_private\_key\_file: /home/ubuntu/exercises/exercise1/clientkey.pem
+
+* Important parameters:
+
+  * ansible\_host → IP/hostname of target
+  * ansible\_user → SSH username
+  * ansible\_ssh\_private\_key\_file → SSH key file
+  * ansible\_port → SSH port (if not 22)
+
+---
+
+## 3️⃣ Connection Settings
+
+* remote\_user → default SSH user
+* private\_key\_file → default key
+* become → sudo usage
+* timeout → SSH timeout
+
+Example in ansible.cfg:
+
+\[defaults]
+remote\_user = ubuntu
+private\_key\_file = \~/exercises/exercise1/clientkey.pem
+host\_key\_checking = False
+timeout = 30
+
+---
+
+## 4️⃣ Privilege Escalation
+
+* become, become\_user, become\_method
+* Example:
+
+\[privilege\_escalation]
+become=True
+become\_user=root
+become\_method=sudo
+
+---
+
+## 5️⃣ Retry / Forks / Parallelism
+
+* forks → number of parallel hosts (default 5)
+* retry\_files\_enabled → enable/disable .retry files
+
+Example:
+
+\[defaults]
+forks = 10
+retry\_files\_enabled = False
+
+---
+
+## 6️⃣ Logging
+
+* log\_path → location for logs
+
+Example:
+
+\[defaults]
+log\_path = /home/ubuntu/ansible.log
+
+---
+
+## 7️⃣ Callback Plugins
+
+* stdout\_callback → format output
+* Example:
+
+\[defaults]
+stdout\_callback = yaml
+
+---
+
+## 8️⃣ Timeout and Pipelining
+
+* timeout → SSH timeout in seconds
+* pipelining=True → speeds up sudo tasks
+
+\[ssh\_connection]
+timeout=30
+pipelining=True
+
+---
+
+## 9️⃣ Gathering Facts
+
+* Control whether Ansible collects host facts
+* Options: smart, implicit, explicit, never
+
+\[defaults]
+gathering = smart
+
+---
+
+## 🔟 Idempotency
+
+* Ansible is idempotent: re-running a playbook only makes changes if necessary.
+
+---
+
+## ✅ Most Important Settings
+
+1. Inventory host configuration (ansible\_host, ansible\_user, ansible\_ssh\_private\_key\_file)
+2. become and become\_method for root tasks
+3. Connection timeout and pipelining
+4. Logging for troubleshooting
+5. SSH key checking (host\_key\_checking=False) for dev/test environments

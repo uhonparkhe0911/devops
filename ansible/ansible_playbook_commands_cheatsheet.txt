@@ -1,0 +1,44 @@
+Ansible Playbook Commands Cheat-Sheet
+
+---
+
+## 1. Run Playbook Normally
+ansible-playbook -i inventory playbook.yml
+
+## 2. Run Playbook with Sudo (Become)
+ansible-playbook -i inventory playbook.yml --become
+
+## 3. Run Playbook in Verbose Mode
+- Basic verbose: -v
+  ansible-playbook -i inventory playbook.yml -v
+- More verbose: -vv
+  ansible-playbook -i inventory playbook.yml -vv
+- Even more verbose: -vvv
+  ansible-playbook -i inventory playbook.yml -vvv
+- Maximum verbosity: -vvvv
+  ansible-playbook -i inventory playbook.yml -vvvv
+
+## 4. Limit Playbook to Specific Host(s)
+ansible-playbook -i inventory playbook.yml --limit web01
+
+## 5. Check Syntax Only
+ansible-playbook -i inventory playbook.yml --syntax-check
+
+## 6. Dry-Run / Check Mode (Preview Changes)
+ansible-playbook -i inventory playbook.yml --check
+- Combine with verbose:
+  ansible-playbook -i inventory playbook.yml --check -vvv
+
+## 7. List Tasks in Playbook
+ansible-playbook -i inventory playbook.yml --list-tasks
+
+## 8. List Hosts Targeted by Playbook
+ansible-playbook -i inventory playbook.yml --list-hosts
+
+---
+
+✅ Notes:
+- `-i inventory` specifies your inventory file.
+- `--become` is needed for tasks that require root privileges.
+- Verbose flags (`-v` to `-vvvv`) are useful for debugging.
+- `--check` shows what changes would happen without actually applying them.

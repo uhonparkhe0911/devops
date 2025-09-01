@@ -1,0 +1,73 @@
+Ansible Variable Precedence Guide
+
+---
+
+## 1️⃣ Variable Precedence in Ansible (High → Low)
+
+| Precedence Level                       | Description                                             | Example / Notes                                                          |
+| -------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Extra vars (`-e`)                      | Variables passed on the command line                    | `ansible-playbook play.yml -e "db_name=accounts"` – **highest priority** |
+| Task vars                              | Variables defined directly in a task using `vars:`      | Used only for that task                                                  |
+| Block vars                             | Variables defined in a `block:`                         | Override play or role vars for tasks in the block                        |
+| Role defaults (role/defaults/main.yml) | Default values inside a role                            | Lowest role-level precedence                                             |
+| Play vars                              | Variables defined under `vars:` at the play level       | Example in your playbook: `vars: db_name: accounts`                      |
+| Inventory host vars                    | Variables defined for a specific host in inventory      | Example: `web01 ansible_host=172.31.28.42 db_name=accounts`              |
+| Inventory group vars                   | Variables defined for a group of hosts in `group_vars/` | Example: `group_vars/webservers/db_name: accounts`                       |
+| Fact vars                              | Collected facts (from `gather_facts: yes`)              | Automatically collected system info                                      |
+| Registered vars                        | Variables captured from tasks (`register`)              | Example: `register: usrout`                                              |
+| Default role vars                      | Variables defined in `defaults/main.yml` inside a role  | Lowest precedence overall                                                |
+
+> Key idea: The higher in the table, the **more precedence** it has. Extra vars override almost everything.
+
+---
+
+## 2️⃣ Variables in Playbook
+
+* Defined using `vars:` at the **play level**:
+
+```yaml
+- hosts: all
+  vars:
+    db_name: accounts
+    db_user: vprofile
+  tasks:
+    - name: Create database
+      community.mysql.mysql_db:
+        name: "{{ db_name }}"
+```
+
+* Task-specific vars:
+
+```yaml
+- name: Create temporary database
+  community.mysql.mysql_db:
+    name: "{{ temp_db }}"
+  vars:
+    temp_db: temp_accounts
+```
+
+---
+
+## 3️⃣ Group Variables
+
+* Stored in `group_vars/<groupname>.yml` or directory.
+* Apply to all hosts in that group.
+* Example:
+
+```
+group_vars/webservers.yml
+---
+db_name: accounts
+db_user: vprofile
+```
+
+* Can be overridden by playbook vars, extra vars, or task vars.
+
+---
+
+## 4️⃣ Comments on Variable Precedence
+
+1. **Explicit > Implicit**: Extra vars override everything.
+2. **Local > Global**: Variables defined closer to task/play override group\_vars, host\_vars, or defaults.
+3. **Idempotent**: Ansible uses the highest precedence value to maintain predictable state.
+4. **Debugging**: Use `debug: var=var_name` to see which value is being used.
