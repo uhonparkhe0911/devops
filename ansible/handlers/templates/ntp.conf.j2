@@ -1,0 +1,9 @@
+# Managed by Ansible
+# NTP Configuration for {{ ansible_hostname }}
+#Comment
+driftfile /var/lib/ntp/ntp.drift
+{% for server in ntp_servers %}
+server {{ server }} iburst
+{% endfor %}
+restrict default nomodify notrap nopeer noquery
+restrict 127.0.0.1

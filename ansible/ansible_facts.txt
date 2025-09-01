@@ -1,0 +1,33 @@
+Ansible Facts and Important Variables
+
+1. What are Ansible Facts?
+   - Facts are system properties automatically discovered by Ansible from managed hosts.
+   - They include details like OS, IP addresses, CPU, memory, etc.
+   - These are gathered using the 'setup' module.
+
+2. gather_facts: false
+   - By default, Ansible gathers facts at the beginning of playbook execution.
+   - Setting 'gather_facts: false' in a playbook disables automatic fact gathering.
+   - This improves performance if facts are not required.
+
+3. How to gather facts manually?
+   - You can explicitly use the 'setup' module when needed:
+     - name: Gather facts
+       ansible.builtin.setup:
+
+4. Some Important Fact Variables:
+   - ansible_hostname       → Hostname of the target machine
+   - ansible_all_ipv4_addresses → List of all IPv4 addresses
+   - ansible_default_ipv4.address → Default IPv4 address of the system
+   - ansible_os_family      → OS family (e.g., RedHat, Debian)
+   - ansible_distribution   → Distribution name (e.g., Ubuntu, CentOS)
+   - ansible_distribution_version → Version of the OS distribution
+   - ansible_processor      → CPU details
+   - ansible_memtotal_mb    → Total memory (in MB)
+   - ansible_memfree_mb     → Free memory (in MB)
+   - ansible_fqdn           → Fully Qualified Domain Name
+   - ansible_user           → Remote user running Ansible
+
+5. Usage Example:
+   - debug:
+       msg: "The system {{ ansible_hostname }} has IP {{ ansible_default_ipv4.address }}"

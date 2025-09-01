@@ -1,0 +1,127 @@
+Ansible Decision Making
+
+Overview
+
+Ansible provides various ways to make decisions dynamically in
+playbooks. Decision-making is essential for executing tasks
+conditionally, handling different environments, or customizing behavior
+per host.
+
+------------------------------------------------------------------------
+
+Conditional Statements (when)
+
+-   when is the most common way to apply conditions.
+-   It evaluates an expression and executes the task only if true.
+
+Example:
+
+    - name: Install httpd on RedHat
+      yum:
+        name: httpd
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+
+------------------------------------------------------------------------
+
+Logical Operators in Conditions
+
+-   and, or, not can be used.
+
+Example:
+
+    when: ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_version'] == "8"
+
+------------------------------------------------------------------------
+
+Using Variables in Conditions
+
+Variables can be used in when to control flow.
+
+    - name: Start service only if enabled
+      service:
+        name: httpd
+        state: started
+      when: service_enabled | bool
+
+------------------------------------------------------------------------
+
+Loops with Conditions
+
+Loops can combine with conditions.
+
+    - name: Install multiple packages on RedHat
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - httpd
+        - vim
+        - git
+      when: ansible_facts['os_family'] == "RedHat"
+
+------------------------------------------------------------------------
+
+Blocks with Conditions
+
+Conditions can be applied to entire blocks.
+
+    - block:
+        - name: Install Apache
+          yum:
+            name: httpd
+            state: present
+
+        - name: Start Apache
+          service:
+            name: httpd
+            state: started
+      when: ansible_facts['os_family'] == "RedHat"
+
+------------------------------------------------------------------------
+
+failed_when and changed_when
+
+-   failed_when overrides default failure conditions.
+-   changed_when overrides whether a task reports as changed.
+
+    - name: Run a command but ignore error code 2
+      command: /bin/false
+      register: result
+      failed_when: result.rc != 2
+
+------------------------------------------------------------------------
+
+ignore_errors and any_errors_fatal
+
+-   ignore_errors: yes lets playbook continue despite failure.
+-   any_errors_fatal: true stops all hosts if one fails.
+
+------------------------------------------------------------------------
+
+Handlers and notify
+
+Tasks can notify handlers conditionally, executed only when changes
+occur.
+
+    - name: Update config
+      copy:
+        src: config.conf
+        dest: /etc/myapp/config.conf
+      notify: Restart MyApp
+
+    handlers:
+      - name: Restart MyApp
+        service:
+          name: myapp
+          state: restarted
+
+------------------------------------------------------------------------
+
+Key Points to Remember
+
+1.  Use when for conditional execution.
+2.  Use facts and variables for flexibility.
+3.  Use failed_when and changed_when to control outcomes.
+4.  Use blocks for grouping conditional tasks.
+5.  Use handlers for event-driven actions.

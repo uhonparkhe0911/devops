@@ -1,0 +1,49 @@
+---
+- name: Provisioning servers
+  hosts: all
+  become: yes
+  vars:
+    app_name: "MyCoolApp"
+    app_port: 8080
+    app_env: "production"
+  tasks:
+    - name: Install ntp agent on ubuntu
+      apt:
+        name: "{{ item }}"
+        state: present
+      when: ansible_distribution == "Ubuntu"
+      loop:
+        - ntp
+        - wget
+        - git
+        - zip
+        - unzip
+
+    - name: Start and enable service on Ubuntu
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Banner file
+      copy:
+        content: '#This server is managed by ansible. No manual changes please.'
+        dest: /etc/motd
+    - name: Create /etc/myapp directory
+      ansible.builtin.file:
+        path: /etc/myapp
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Deploy app configuration from template
+      ansible.builtin.template:
+        src: templates/app.conf.j2
+        dest: /etc/myapp/app.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+

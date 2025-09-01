@@ -1,0 +1,124 @@
+---
+
+# Ansible Handlers (Detailed with Types)
+
+## 1️⃣ What Are Handlers?
+
+* Handlers are special tasks triggered only when notified by other tasks.
+* Used for actions that should happen on change, like restarting services.
+* Run at the end of a play by default, once per play, even if notified multiple times.
+
+## 2️⃣ How Handlers Work
+
+1. A task uses `notify` to point to a handler.
+2. If the task changes the system, the handler is queued.
+3. Handler executes at the end of the play (unless flushed immediately).
+
+**Example:**
+
+```yaml
+- name: Deploy NTP configuration using template
+  template:
+    src: templates/ntp.conf.j2
+    dest: /etc/ntp.conf
+  notify: Restart NTP
+
+handlers:
+  - name: Restart NTP
+    service:
+      name: ntp
+      state: restarted
+```
+
+## 3️⃣ Key Features
+
+* Run only when notified.
+* Run once per play, even if multiple tasks notify them.
+* Can notify other handlers (chained handlers).
+* Can use `meta: flush_handlers` for immediate execution.
+
+## 4️⃣ Types of Handlers
+
+### 4.1 Service Handlers
+
+* Most common type, used to restart or reload services.
+
+```yaml
+handlers:
+  - name: Restart Apache
+    service:
+      name: apache2
+      state: restarted
+```
+
+### 4.2 Command / Shell Handlers
+
+* Run arbitrary commands when notified.
+
+```yaml
+handlers:
+  - name: Reload Firewall
+    command: ufw reload
+```
+
+### 4.3 Template Handlers
+
+* Triggered when a template changes.
+
+```yaml
+- name: Update NTP config
+  template:
+    src: templates/ntp.conf.j2
+    dest: /etc/ntp.conf
+  notify: Restart NTP
+```
+
+### 4.4 Meta Handlers
+
+* Special built-in handlers like `meta: flush_handlers`.
+
+```yaml
+- meta: flush_handlers
+```
+
+* Forces all queued handlers to run immediately.
+
+### 4.5 Chained Handlers
+
+* Handlers can notify other handlers.
+
+```yaml
+handlers:
+  - name: Restart NTP
+    service:
+      name: ntp
+      state: restarted
+    notify: Reload App
+
+  - name: Reload App
+    service:
+      name: myapp
+      state: reloaded
+```
+
+## 5️⃣ Best Practices
+
+1. Keep handlers focused and small.
+2. Ensure notify names match handler names exactly.
+3. Use flush\_handlers only if needed.
+4. Use templates with handlers for configuration changes.
+5. Avoid nesting handlers inside tasks—place at playbook level.
+
+## 6️⃣ Common Issues
+
+* Handler not running → task didn’t change anything.
+* Name mismatch → notify must exactly match handler.
+* Path issues for templates → must exist on control node.
+* Indentation errors → handlers must be at same level as tasks.
+
+## 7️⃣ Summary
+
+* Handlers are triggered only on change.
+* Key points: notify → handler runs once → flush\_handlers for immediate execution.
+* Types include: Service, Command, Template, Meta, Chained.
+* Handlers make playbooks efficient, idempotent, and maintain system state.

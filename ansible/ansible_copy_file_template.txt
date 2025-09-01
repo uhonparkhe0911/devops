@@ -1,0 +1,103 @@
+
+Ansible Modules: copy, file, and template
+=========================================
+
+1. copy module
+--------------
+The copy module copies files from the control node to managed hosts, or creates files with content.
+
+Key Parameters:
+- src: Source file on control node
+- dest: Destination path on managed host
+- content: Inline file content instead of src
+- owner, group, mode: Permissions
+
+Examples:
+- name: Copy a file to remote hosts
+  ansible.builtin.copy:
+    src: /home/ansible/app.conf
+    dest: /etc/myapp/app.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create a file with inline content
+  ansible.builtin.copy:
+    dest: /etc/motd
+    content: "Welcome to the server!\n"
+
+Note: copy cannot directly create empty directories. Use the file module for that.
+
+2. file module
+--------------
+The file module manages filesystem objects: directories, files, symlinks.
+
+Key Parameters:
+- path: Path of the file/directory
+- state: desired state ('file', 'directory', 'absent', 'link', 'touch')
+- owner, group, mode: Permissions
+
+Examples:
+- name: Ensure a directory exists
+  ansible.builtin.file:
+    path: /etc/myapp
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure a file is removed
+  ansible.builtin.file:
+    path: /tmp/old.log
+    state: absent
+
+- name: Create a symlink
+  ansible.builtin.file:
+    src: /usr/bin/python3
+    dest: /usr/bin/python
+    state: link
+
+3. template module
+------------------
+The template module copies Jinja2 templates from the control node to managed hosts.
+It allows dynamic file generation based on variables.
+
+Key Parameters:
+- src: Template file on control node (.j2)
+- dest: Destination path on managed host
+- owner, group, mode: Permissions
+
+Example template (app.conf.j2):
+[app]
+name = {{ app_name }}
+port = {{ app_port }}
+environment = {{ app_env }}
+
+Playbook Example:
+- name: Deploy app configuration from template
+  ansible.builtin.template:
+    src: templates/app.conf.j2
+    dest: /etc/myapp/app.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+With variables:
+vars:
+  app_name: "MyCoolApp"
+  app_port: 8080
+  app_env: "production"
+
+Additional Note:
+- copy is for static files or simple content
+- file is for managing directories, permissions, symlinks
+- template is for dynamic configuration files using variables
+
+Creating /etc/myapp Directory Using file:
+- name: Create /etc/myapp directory
+  ansible.builtin.file:
+    path: /etc/myapp
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
