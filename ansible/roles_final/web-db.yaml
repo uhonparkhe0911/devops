@@ -1,0 +1,14 @@
+---
+- name: DBServer Setup
+  hosts: dbservers
+  become: yes
+  roles:
+    - database
+
+- name: WebServer Setup
+  hosts: webservers
+  become: yes
+  roles:
+    - apache2
+   
+

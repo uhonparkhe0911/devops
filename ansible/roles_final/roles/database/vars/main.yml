@@ -1,0 +1,16 @@
+#SPDX-License-Identifier: MIT-0
+---
+# vars file for post-install
+USRNM: playuser
+COMM: "variable from groupvars_all file"
+app_name: "MyCoolApp"
+app_port: 8080
+app_env: "production"
+ntp_servers:
+  - 0.ubuntu.pool.ntp.org
+  - 1.ubuntu.pool.ntp.org
+  - 2.ubuntu.pool.ntp.org
+mydir: "/opt/dir22"
+db_name: accounts
+db_user: vprofile
+db_password: 'SecurePass123'

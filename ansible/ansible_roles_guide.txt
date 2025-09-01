@@ -1,0 +1,134 @@
+---
+
+# Ansible Roles – Complete Guide
+
+Roles in Ansible are a way to organize playbooks and related files in a structured, reusable manner. They help break a playbook into modular components for cleaner, reusable code.
+
+## 1️⃣ What is a Role?
+
+* A role is a collection of tasks, variables, templates, handlers, files, and defaults structured in a predefined directory format.
+* Encourages reusability, cleaner playbooks, and sharing via Ansible Galaxy.
+
+## 2️⃣ Role Directory Structure
+
+```
+myrole/
+├── defaults/        # Default variables (lowest priority)
+│   └── main.yml
+├── files/           # Static files to be copied
+├── handlers/        # Handlers (notify/restart services)
+│   └── main.yml
+├── meta/            # Metadata (dependencies, galaxy info)
+│   └── main.yml
+├── tasks/           # Main tasks
+│   └── main.yml
+├── templates/       # Jinja2 templates (*.j2)
+├── tests/           # Test playbooks
+│   ├── inventory
+│   └── test.yml
+├── vars/            # Variables (higher priority than defaults)
+│   └── main.yml
+```
+
+## 3️⃣ Creating a Role
+
+```bash
+ansible-galaxy init post-install
+```
+
+* Creates a role named `post-install` with the folder structure.
+* Place existing playbooks, templates, vars, handlers in the correct directories.
+
+## 4️⃣ Using a Role in a Playbook
+
+```yaml
+- hosts: all
+  become: yes
+  roles:
+    - post-install
+```
+
+* Automatically runs tasks from `roles/post-install/tasks/main.yml`.
+
+## 5️⃣ Variables in Roles
+
+* `defaults/main.yml` → lowest priority
+* `vars/main.yml` → higher priority, usually required values
+
+**Example (`defaults/main.yml`)**:
+
+```yaml
+package_name: httpd
+service_name: httpd
+```
+
+## 6️⃣ Handlers in Roles
+
+**handlers/main.yml:**
+
+```yaml
+- name: restart httpd
+  service:
+    name: "{{ service_name }}"
+    state: restarted
+```
+
+**tasks/main.yml:**
+
+```yaml
+- name: Install Apache
+  yum:
+    name: "{{ package_name }}"
+    state: present
+  notify: restart httpd
+```
+
+## 7️⃣ Dependencies Between Roles
+
+**meta/main.yml:**
+
+```yaml
+dependencies:
+  - role: common
+  - role: security
+```
+
+* Running `post-install` will also run `common` and `security`.
+
+## 8️⃣ Sharing Roles with Ansible Galaxy
+
+* Create a role:
+
+```bash
+ansible-galaxy init myrole
+```
+
+* Publish to Galaxy:
+
+```bash
+ansible-galaxy import <github_user> <repo_name>
+```
+
+* Install a role:
+
+```bash
+ansible-galaxy install geerlingguy.apache
+```
+
+## 9️⃣ Best Practices
+
+1. One purpose per role (e.g., `nginx`, `mysql`, `firewall`).
+2. Use `defaults/` for tunable variables, `vars/` for fixed values.
+3. Place templates in `templates/` and use Jinja2 variables.
+4. Define handlers in roles instead of global playbooks.
+5. Use tags for selective execution:
+
+```yaml
+- name: Install Apache
+  yum:
+    name: "{{ package_name }}"
+    state: present
+  tags: install
+```
+
+✅ With roles, you can create modular, reusable, and shareable automation, keeping playbooks clean and maintainable.

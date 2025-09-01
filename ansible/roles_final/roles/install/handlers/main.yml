@@ -1,0 +1,8 @@
+#SPDX-License-Identifier: MIT-0
+---
+# handlers file for post-install
+- name: Restart NTP
+  service:
+    name: ntp
+    state: restarted
+  when: ansible_distribution == "Ubuntu"
