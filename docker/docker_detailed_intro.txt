@@ -1,0 +1,126 @@
+Introduction to Docker, Docker Container, and Docker Engine
+
+1. What is Docker?
+
+Docker is an open-source platform that enables developers and system
+administrators to build, package, ship, and run applications in
+lightweight, portable containers.
+
+Instead of relying on full virtual machines, Docker uses OS-level
+virtualization to create isolated environments called containers.
+Containers ensure that applications run consistently across different
+environments (development, testing, production, cloud, on-premises).
+
+Key Features of Docker:
+
+-   Containerization: Applications run in isolated containers.
+-   Lightweight: No need for a full OS per application.
+-   Portable: Containers run anywhere with Docker installed.
+-   Versioned: Images can be versioned and rolled back.
+-   Scalable: Containers scale easily with orchestrators like
+    Kubernetes.
+-   DevOps Friendly: Integrates seamlessly with CI/CD pipelines.
+
+------------------------------------------------------------------------
+
+2. What is a Docker Container?
+
+A Docker container is a runtime instance of a Docker image.
+
+-   A Docker image is a template containing an application and its
+    dependencies.
+-   A Docker container is a running instance of that image.
+
+Characteristics of Docker Containers:
+
+1.  Isolated: Each container has its own process space, filesystem, and
+    network stack.
+2.  Lightweight: Shares the host OS kernel → much smaller than VMs.
+3.  Ephemeral: Containers can be started, stopped, and destroyed
+    quickly.
+4.  Portable: A container runs consistently on any system with Docker.
+5.  Immutable: Containers are created from images; changes are not saved
+    unless explicitly committed.
+
+Example Workflow:
+
+1.  Write a Dockerfile describing the environment.
+2.  Build an image using: docker build -t myapp .
+3.  Run the container: docker run -d -p 8080:80 myapp
+
+Here, the container is the running unit of your application, isolated
+but sharing the host OS kernel.
+
+------------------------------------------------------------------------
+
+3. What is Docker Engine?
+
+Docker Engine is the core part of Docker – the client-server application
+that makes containerization possible. It is responsible for building,
+running, and managing containers.
+
+Components of Docker Engine:
+
+1.  Docker Daemon (dockerd)
+    -   The background process that manages Docker objects (containers,
+        images, volumes, networks).
+    -   Handles container lifecycle, builds images, and communicates
+        with container runtimes.
+2.  Docker API (REST API)
+    -   Provides an interface for programs and tools to interact with
+        the Docker daemon.
+    -   Used internally by the Docker CLI and externally by
+        orchestration tools.
+3.  Docker CLI (docker command)
+    -   A command-line tool that users interact with.
+    -   Commands like docker run, docker build, and docker ps are
+        translated into API calls.
+
+How They Work Together:
+
+-   A user runs a command using Docker CLI.
+-   The CLI sends this command via the Docker API to the Docker Daemon.
+-   The daemon executes the command (builds an image, runs a container,
+    etc.).
+
+Example:
+
+When you run:
+
+    docker run hello-world
+
+-   CLI sends the request to the Docker Daemon.
+-   The Daemon pulls the image if not available locally.
+-   It creates and starts a container from that image.
+
+------------------------------------------------------------------------
+
+4. Docker vs Docker Container vs Docker Engine
+
+  -----------------------------------------------------------------------
+  Term                                        Description
+  ------------------------------------------- ---------------------------
+  Docker                                      The overall platform/tool
+                                              for containerization.
+
+  Docker Container                            A lightweight, isolated
+                                              runtime environment created
+                                              from an image.
+
+  Docker Engine                               The client-server
+                                              application (daemon, API,
+                                              CLI) that powers Docker.
+  -----------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+5. Conclusion
+
+-   Docker is the platform for containerization.
+-   Docker Container is the actual running environment for your
+    application.
+-   Docker Engine is the underlying client-server technology that builds
+    and manages containers.
+
+Together, they make it possible to run applications in a consistent,
+portable, and efficient way across any environment.

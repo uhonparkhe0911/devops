@@ -1,0 +1,108 @@
+
+AWS VPC DESIGN AND PEERING CONNECTIONS - DETAILED DOCUMENT
+
+1. VIRTUAL PRIVATE CLOUD (VPC)
+- A logically isolated virtual network in AWS.
+- You define IP ranges (CIDR block) for the VPC.
+- VPCs allow you to launch AWS resources in a secure network environment.
+
+Steps to Create a VPC:
+1. Go to VPC console -> Create VPC.
+2. Enter Name, CIDR block (e.g., 172.16.0.0/16).
+3. Select tenancy (default/dedicated).
+4. Click Create.
+
+---
+
+2. SUBNETS
+- Subnet is a segment of a VPC where resources can be placed.
+- Subnets can be Public (connected to Internet Gateway) or Private (no direct internet access).
+
+Steps:
+1. Inside VPC, go to Subnets -> Create Subnet.
+2. Select VPC, Availability Zone, and CIDR block (e.g., 172.16.0.0/24 for Public, 172.16.1.0/24 for Private).
+3. Create multiple subnets across different Availability Zones for High Availability.
+
+---
+
+3. INTERNET GATEWAY (IGW)
+- A horizontally scaled, redundant, and highly available VPC component that allows communication between VPC resources and the internet.
+
+Steps:
+1. Go to Internet Gateways -> Create IGW.
+2. Attach IGW to VPC.
+3. Update Public Subnet route table to direct 0.0.0.0/0 traffic to IGW.
+
+---
+
+4. ROUTE TABLES
+- Define how traffic is directed in the VPC.
+
+Steps:
+1. Create route tables for Public and Private subnets.
+2. For Public route table, add route 0.0.0.0/0 -> Internet Gateway.
+3. For Private route table, add route 0.0.0.0/0 -> NAT Gateway (for outbound internet access).
+
+---
+
+5. NAT GATEWAY
+- Allows instances in Private Subnets to access the internet securely (software updates, package installs) without exposing them.
+
+Steps:
+1. Allocate an Elastic IP (EIP).
+2. Create a NAT Gateway in a Public Subnet using the allocated EIP.
+3. Update Private Route Table to forward 0.0.0.0/0 traffic to NAT Gateway.
+
+---
+
+6. ELASTIC IP (EIP)
+- A static, public IPv4 address allocated to your AWS account.
+- Useful for NAT Gateways, Bastion Hosts, or EC2 instances that require a fixed IP.
+
+Usage:
+- Attach EIP to NAT Gateway for consistent outbound IP.
+- Attach to Bastion Host for consistent SSH entry point.
+- Attach to EC2 instances when you need a fixed IP for DNS or whitelisting.
+
+Steps:
+1. Go to Elastic IPs -> Allocate Elastic IP.
+2. Associate it with NAT Gateway or EC2.
+
+---
+
+7. BASTION HOST
+- A secure entry point for administering instances in Private Subnets.
+- Typically deployed in Public Subnet with EIP for external SSH access.
+
+Steps:
+1. Launch EC2 instance in Public Subnet.
+2. Assign Elastic IP.
+3. Create Security Group to allow SSH from admin IPs only.
+4. From Bastion Host, SSH into Private Subnet instances.
+
+---
+
+8. VPC PEERING CONNECTION
+- Networking connection between two VPCs that allows resources to communicate as if they were in the same network.
+
+Steps to Create VPC Peering:
+1. Create 2 VPCs (e.g., VPC A - 172.16.0.0/16, VPC B - 10.0.0.0/16).
+2. Go to VPC console -> Peering Connections -> Create Peering Connection.
+3. Select Requester VPC and Accepter VPC (can be in same or different AWS accounts).
+4. Accept the peering request from the Accepter side.
+5. Update Route Tables in both VPCs to send traffic destined for peer VPC to the peering connection.
+6. Update Security Groups in both VPCs to allow inbound/outbound traffic from peer VPC CIDR.
+
+---
+
+COMPONENT SUMMARY
+- VPC: Main network container (CIDR block).
+- Subnets: Public (internet access), Private (internal-only).
+- Internet Gateway: Provides internet access to Public Subnets.
+- Route Tables: Control traffic flow within VPC.
+- NAT Gateway: Provides outbound internet for Private Subnets (needs Elastic IP).
+- Elastic IP: Static IP used with NAT Gateway, Bastion Hosts, or EC2.
+- Bastion Host: Secure access point for Private Subnet resources.
+- VPC Peering: Connects two VPCs for intercommunication.
+
+This setup ensures High Availability with Public and Private Subnets spread across 2 Availability Zones, NAT Gateways in each AZ, and a Bastion Host for secure access.

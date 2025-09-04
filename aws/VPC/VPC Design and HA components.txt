@@ -1,0 +1,133 @@
+# VPC Design and Components with High Availability
+
+A **Virtual Private Cloud (VPC)** is a logically isolated section of the cloud provider's network where you can launch and manage resources securely. Below is a detailed breakdown of VPC design, components, and high availability (HA) considerations with **public and private subnets across 2 Availability Zones (AZs)**.
+
+---
+
+## 1. Core Components of a VPC
+
+1. **VPC CIDR Block**
+
+   * The IP address range assigned to the VPC (e.g., 10.0.0.0/16).
+   * Provides private IP addressing for resources inside the VPC.
+
+2. **Subnets**
+
+   * **Public Subnets**: Accessible from the internet, used for load balancers, bastion hosts, NAT gateways, etc.
+   * **Private Subnets**: Not directly accessible from the internet, used for application servers, databases, internal services.
+   * Each subnet belongs to **one Availability Zone**.
+
+3. **Route Tables**
+
+   * Define how traffic flows within the VPC and outside.
+   * Public subnets route to the Internet Gateway.
+   * Private subnets route through a NAT Gateway for outbound internet.
+
+4. **Internet Gateway (IGW)**
+
+   * Enables resources in public subnets to communicate with the internet.
+
+5. **NAT Gateway / NAT Instance**
+
+   * Provides internet access for resources in private subnets without exposing them directly.
+
+6. **Security Groups (SGs)**
+
+   * Act as virtual firewalls for resources, controlling inbound/outbound traffic.
+
+7. **Network ACLs (NACLs)**
+
+   * Stateless firewalls that provide subnet-level traffic control.
+
+8. **Elastic IPs (EIPs)**
+
+   * Static IPs used for resources like NAT Gateways or Bastion Hosts.
+
+9. **Peering / Transit Gateway (Optional)**
+
+   * Used for connecting multiple VPCs.
+
+---
+
+## 2. High Availability Design (2 AZs)
+
+To achieve high availability and fault tolerance, we distribute subnets and resources across **two Availability Zones**.
+
+### Subnet Layout Example (VPC CIDR: 10.0.0.0/16)
+
+* **AZ-A**
+
+  * Public Subnet A: 10.0.1.0/24
+  * Private Subnet A: 10.0.11.0/24
+
+* **AZ-B**
+
+  * Public Subnet B: 10.0.2.0/24
+  * Private Subnet B: 10.0.12.0/24
+
+### Public Subnets
+
+* Host Load Balancers (ALB/NLB), Bastion Hosts, NAT Gateways.
+* Route tables configured to forward 0.0.0.0/0 traffic to the IGW.
+
+### Private Subnets
+
+* Host EC2 application servers, databases, and backend systems.
+* Route tables forward 0.0.0.0/0 traffic to NAT Gateway in the corresponding AZ for redundancy.
+
+---
+
+## 3. High Availability Components
+
+1. **Internet Gateways**
+
+   * One per VPC, shared across AZs.
+
+2. **NAT Gateways**
+
+   * Deploy one NAT Gateway per AZ in the public subnets.
+   * Each private subnet routes internet-bound traffic to its local NAT Gateway.
+   * Provides HA in case of AZ failure.
+
+3. **Load Balancers (ALB/NLB)**
+
+   * Placed in public subnets across both AZs.
+   * Distributes incoming traffic to backend EC2 instances in private subnets across AZs.
+
+4. **Database (RDS/NoSQL)**
+
+   * Multi-AZ deployments ensure automatic failover to standby DB in another AZ.
+
+5. **Auto Scaling Groups (ASGs)**
+
+   * Launch EC2 instances in private subnets across both AZs.
+   * Ensure application scales horizontally and remains available.
+
+---
+
+## 4. Traffic Flow Overview
+
+* **Inbound Traffic (Internet → VPC)**
+
+  * Reaches the Load Balancer in public subnets via IGW.
+  * Forwarded to EC2 instances in private subnets across AZs.
+
+* **Outbound Traffic (Private EC2 → Internet)**
+
+  * Routes via NAT Gateway in the local AZ.
+  * NAT forwards to IGW, then to the internet.
+
+---
+
+## 5. Summary of HA Best Practices
+
+* Use **at least 2 AZs** for public and private subnets.
+* Deploy **redundant NAT Gateways** (one per AZ).
+* Place **Load Balancers** across multiple AZs.
+* Enable **Multi-AZ for RDS/databases**.
+* Use **Auto Scaling Groups** for EC2 applications.
+* Ensure **subnet CIDR blocks do not overlap**.
+
+---
+
+✅ This design ensures resilience, scalability, and secure separation of workloads while maintaining **high availability** across two Availability Zones.

@@ -1,0 +1,106 @@
+### IPv4 Networking and Subnet Masks
+
+#### 1. What is IPv4?
+
+* IPv4 (Internet Protocol version 4) is the 4th version of the Internet Protocol, widely used to identify devices on a network using an addressing system.
+* IPv4 uses a **32-bit address**, represented in dotted-decimal format (e.g., 192.168.1.1).
+* Total possible addresses: **2^32 = 4,294,967,296** addresses.
+
+---
+
+#### 2. IPv4 Address Structure
+
+An IPv4 address is divided into two parts:
+
+* **Network ID** – identifies the network.
+* **Host ID** – identifies a device within that network.
+
+Example: `192.168.1.10/24`
+
+* Network ID: 192.168.1.0
+* Host ID range: 192.168.1.1 – 192.168.1.254
+* Broadcast address: 192.168.1.255
+
+---
+
+#### 3. Classes of IPv4 Addresses
+
+| Class | Range (First Octet) | Default Subnet Mask | Networks  | Hosts per Network |
+| ----- | ------------------- | ------------------- | --------- | ----------------- |
+| A     | 0 – 127             | 255.0.0.0 (/8)      | 128       | 16,777,214        |
+| B     | 128 – 191           | 255.255.0.0 (/16)   | 16,384    | 65,534            |
+| C     | 192 – 223           | 255.255.255.0 (/24) | 2,097,152 | 254               |
+| D     | 224 – 239           | – (Multicast)       | –         | –                 |
+| E     | 240 – 255           | – (Reserved)        | –         | –                 |
+
+---
+
+#### 4. Subnet Masks
+
+* Subnet masks define how many bits are used for the **network** and how many for the **host**.
+* Written in **dotted-decimal** (e.g., 255.255.255.0) or **CIDR notation** (e.g., /24).
+
+Examples:
+
+* **/8** → 255.0.0.0 → 16,777,214 hosts
+* **/16** → 255.255.0.0 → 65,534 hosts
+* **/24** → 255.255.255.0 → 254 hosts
+* **/30** → 255.255.255.252 → 2 hosts (used for point-to-point links)
+
+---
+
+#### 5. Private vs Public IP Ranges
+
+* **Private IP ranges** (not routable on the Internet):
+
+  * Class A: 10.0.0.0 – 10.255.255.255
+  * Class B: 172.16.0.0 – 172.31.255.255
+  * Class C: 192.168.0.0 – 192.168.255.255
+* **Public IPs** are all other addresses not in the private ranges.
+
+---
+
+#### 6. Special IPv4 Addresses
+
+* **0.0.0.0** – Default route / unspecified address
+* **127.0.0.1** – Loopback (localhost)
+* **169.254.0.0/16** – APIPA (Automatic Private IP Addressing)
+* **Broadcast address** – last IP in a subnet (e.g., 192.168.1.255 in /24)
+
+---
+
+#### 7. Subnetting Example
+
+Example: `192.168.1.0/26`
+
+* Subnet mask: 255.255.255.192
+* Number of subnets: 4
+* Hosts per subnet: 62
+* Ranges:
+
+  * 192.168.1.0 – 192.168.1.63
+  * 192.168.1.64 – 192.168.1.127
+  * 192.168.1.128 – 192.168.1.191
+  * 192.168.1.192 – 192.168.1.255
+
+---
+
+#### 8. CIDR (Classless Inter-Domain Routing)
+
+* CIDR allows more efficient allocation of IP addresses.
+* Instead of strict classes, networks are represented as `<IP>/<prefix length>`.
+* Example: `192.168.1.0/28` = 16 IPs (14 usable).
+
+---
+
+#### 9. Key Points
+
+* IPv4 uses **32-bit addresses**.
+* Divided into **network and host** portions.
+* Subnet masks define usable IP ranges.
+* **Private ranges** are used in LANs, **public ranges** on the Internet.
+* CIDR helps in efficient allocation.
+
+---
+
+✅ This covers the essentials of IPv4 networking and subnet masks.
