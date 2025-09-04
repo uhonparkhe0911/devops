@@ -1,0 +1,107 @@
+# Docker Images and Docker Registries - Detailed Guide
+
+## 1. What is a Docker Image?
+- A **Docker Image** is a lightweight, standalone, immutable file that contains:
+  - Source code
+  - Libraries
+  - Dependencies
+  - Tools
+  - Configuration files
+
+- It acts as a **blueprint** for running a container.
+- Containers are created from images.
+
+### Example
+The `nginx` image contains everything required to run an Nginx web server.
+When you run:
+    docker run nginx
+Docker uses the nginx image to create and run a container.
+
+---
+
+## 2. Docker Image Layers
+- Docker images are built in **layers**.
+- Each instruction in a Dockerfile (FROM, RUN, COPY, ADD, etc.) creates a new layer.
+- Layers are **read-only** and shared across multiple images to save space.
+
+### Example
+FROM ubuntu:20.04
+RUN apt-get update && apt-get install -y python3
+COPY app.py /app/
+CMD ["python3", "/app/app.py"]
+
+- `FROM ubuntu:20.04` → Base layer
+- `RUN apt-get ...` → Adds Python3
+- `COPY app.py /app/` → Adds your app code
+- Final image = combination of all layers
+
+---
+
+## 3. Difference Between Images and Containers
+- **Image** = Blueprint (static, read-only)
+- **Container** = Running instance of the image (dynamic, writable)
+
+Example:
+- Image: `mysql:8.0` (stored on disk or registry)
+- Container: A running MySQL server process created from that image.
+
+---
+
+## 4. Docker Registries
+A **Docker Registry** is a service for storing and distributing Docker images.
+
+### Types:
+1. **Public Registries**
+   - Anyone can access and pull images.
+   - Example: **Docker Hub**, GitHub Container Registry.
+   
+2. **Private Registries**
+   - Restricted access, used within organizations.
+   - Examples:
+     - Amazon Elastic Container Registry (ECR)
+     - Google Artifact Registry
+     - Azure Container Registry
+     - Harbor (open-source)
+
+---
+
+## 5. Docker Hub
+- Docker Hub is the default public registry.
+- It hosts official images like `ubuntu`, `nginx`, `mysql`, `redis`.
+- When you run:
+    docker pull ubuntu
+Docker pulls the `ubuntu` image from Docker Hub.
+
+---
+
+## 6. Using Registries
+
+### Pulling an Image
+docker pull nginx:latest
+
+### Running an Image
+docker run -d -p 8080:80 nginx
+
+### Tagging an Image
+docker tag myapp:1.0 username/myapp:1.0
+
+### Pushing to Docker Hub
+docker login
+docker push username/myapp:1.0
+
+### Example: Using AWS ECR
+1. Authenticate Docker to ECR:
+   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account_id>.dkr.ecr.us-east-1.amazonaws.com
+
+2. Tag and Push:
+   docker tag myapp:1.0 <account_id>.dkr.ecr.us-east-1.amazonaws.com/myapp:1.0
+   docker push <account_id>.dkr.ecr.us-east-1.amazonaws.com/myapp:1.0
+
+---
+
+## 7. Summary
+- **Docker Image** = Blueprint for containers (read-only, layered).
+- **Docker Container** = Running instance of an image.
+- **Docker Registry** = Storage and distribution system for images.
+- **Docker Hub** = Default public registry.
+- Enterprises often use **private registries** (ECR, GCR, ACR, Harbor) for security and control.

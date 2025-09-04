@@ -1,0 +1,68 @@
+# Docker Containers - Process, Filesystem, and Port Mapping
+
+## 1. Container is a Process
+- At its core, a container is just a **Linux process** running on the host machine.  
+- Docker uses **namespaces** and **cgroups** to isolate this process:
+  - Namespaces provide process isolation (PID, network, mount, etc.).
+  - Cgroups enforce resource limits (CPU, memory, I/O).
+- The process inside a container believes it has:
+  - Its own operating system
+  - Its own network interface
+  - Its own filesystem
+
+### Example
+docker run -d nginx
+
+- This starts an `nginx` process on the host.
+- From the host, you can see it with:
+  ps aux | grep nginx
+- From inside the container:
+  docker exec -it <container_id> ps aux
+  → You only see processes inside that container.
+
+---
+
+## 2. Container as a Directory (Storage in /var/lib/docker)
+- Each container and image is stored in Docker’s local storage directory:  
+  **/var/lib/docker**
+- This directory holds:
+  - `containers/` → Metadata and writable layer for containers
+  - `images/` → Cached image layers
+  - `volumes/` → Persistent data
+  - `overlay2/` → Union filesystem layers for images and containers
+
+So, a container can also be thought of as a **directory/repository** of files that represent its state and data.
+
+### Example
+- If you inspect `/var/lib/docker/containers/<container_id>`, you’ll see logs and metadata for that container.
+
+---
+
+## 3. Container Port Mapping
+- By default, containers run in an isolated network namespace.
+- To expose a container’s service to the host or external users, Docker uses **port mapping**.
+
+### Example: Running Nginx
+docker run -d -p 8080:80 nginx
+
+- `-p 8080:80` → Maps **host port 8080** to **container port 80**.
+- When you access `http://localhost:8080` on the host, the request is forwarded to port 80 inside the container.
+
+### Syntax
+docker run -p <host_port>:<container_port> <image>
+
+- `<host_port>`: Port on the machine running Docker
+- `<container_port>`: Port inside the container
+
+### Multiple Ports Example
+docker run -d -p 5000:5000 -p 8000:80 myapp
+
+- Maps host port 5000 → container port 5000
+- Maps host port 8000 → container port 80
+
+---
+
+## 4. Summary
+- A container is **just a process** on the host, isolated by Linux features.
+- A container’s filesystem and metadata live in **/var/lib/docker**.
+- Port mapping allows external users to access services running inside containers by binding host ports to container ports.

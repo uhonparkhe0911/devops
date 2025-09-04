@@ -1,0 +1,43 @@
+    1  sudo -i
+    2  exit
+    3  docker images
+    4  docker run hello-world
+    5  sudo groupadd docker
+    6  docker run hello-world
+    7  sudo systemctl enable docker.service
+    8  sudo systemctl enable containerd.service
+    9  docker ps -a
+   10  docker --version
+   11  docker pull nginx
+   12  docker pull nginx:stable-alpine-perl
+   13  docker images
+   14  docker ps
+   15  docker run --name myweb -p 7090:80 -d nginx
+   16  history
+   17  docker ps
+   18  docker stop 3595509ac6a3
+   19  docker ps
+   20  docker ps -a
+   21  docker start myweb
+   22  docker ps
+   23  ps -f
+   24  ps -ef
+   25  cd /var/lib/docker/
+   26  ls
+   27  sudo -i
+   28  docker ps
+   29  docker exec myweb mkdir utkarsh
+   30  docker exec myweb ls /
+   31  docker exec myweb /bin/bash
+   32  docker exec -it myweb /bin/bash
+   33  docker images
+   34  docker rmi nginx:stable-alpine-perl
+   35  docker ps
+   36  docker stop myweb
+   37  docker rm myweb
+   38  docker rmi nginx
+   39  docker ps
+   40  socker images
+   41  docker images
+   42  history
+   43  history > docker_commands_history.txt

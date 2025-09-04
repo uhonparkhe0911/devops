@@ -1,0 +1,183 @@
+# Docker Commands and Concepts - Detailed Guide
+
+This document provides an overview of essential Docker concepts and commonly used commands with examples.
+
+---
+
+## 1. Basic Docker Commands
+
+### Check Docker Version
+docker --version
+docker info
+
+### Run a Container
+docker run hello-world
+docker run -it ubuntu bash
+
+- `-it` → Interactive + TTY (attach terminal)
+- `ubuntu bash` → Runs bash shell inside Ubuntu container
+
+### List Containers
+docker ps             # Running containers
+docker ps -a          # All containers (including stopped)
+
+### Stop/Start/Remove Containers
+docker stop <container_id>
+docker start <container_id>
+docker rm <container_id>
+
+### Example
+docker run -d --name web nginx
+docker stop web
+docker start web
+docker rm web
+
+---
+
+## 2. Docker Images
+
+### List Images
+docker images
+
+### Pull Image from Registry
+docker pull nginx:latest
+
+### Remove Image
+docker rmi nginx:latest
+
+### Build Image from Dockerfile
+docker build -t myapp:1.0 .
+
+### Tag an Image
+docker tag myapp:1.0 username/myapp:1.0
+
+### Push Image to Registry
+docker login
+docker push username/myapp:1.0
+
+---
+
+## 3. Docker Exec and Logs
+
+### Run Commands Inside a Running Container
+docker exec -it <container_id> bash
+
+### View Container Logs
+docker logs <container_id>
+docker logs -f <container_id>   # Follow logs in real time
+
+---
+
+## 4. Port Mapping and Networking
+
+### Run Container with Port Mapping
+docker run -d -p 8080:80 nginx
+
+- Maps host port 8080 → container port 80
+- Access at http://localhost:8080
+
+### Inspect Network
+docker network ls
+docker network inspect bridge
+
+### Connect Container to Network
+docker network create mynet
+docker run -d --name db --network mynet mysql:5.7
+docker run -it --name client --network mynet ubuntu bash
+
+---
+
+## 5. Volumes and Data Management
+
+### Create and Use a Volume
+docker volume create mydata
+docker run -d -v mydata:/var/lib/mysql mysql:5.7
+
+- `-v mydata:/var/lib/mysql` mounts the volume to persist data.
+
+### Bind Mount Example
+docker run -d -v /home/user/app:/usr/src/app node:18
+
+- Maps local directory `/home/user/app` to container’s `/usr/src/app`
+
+---
+
+## 6. Docker Compose (Multi-Container Apps)
+
+### docker-compose.yml Example
+version: '3'
+services:
+  web:
+    image: nginx
+    ports:
+      - "8080:80"
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+
+### Commands
+docker-compose up -d
+docker-compose ps
+docker-compose down
+
+---
+
+## 7. Docker System Commands
+
+### Cleanup Unused Resources
+docker system prune -f
+docker volume prune -f
+docker image prune -a -f
+
+### Check Disk Usage
+docker system df
+
+---
+
+## 8. Docker Inspect and Stats
+
+### Inspect Container or Image
+docker inspect <container_id>
+docker inspect nginx
+
+### View Resource Usage
+docker stats
+
+---
+
+## 9. Examples in Action
+
+### Example 1: Run Nginx Web Server
+docker run -d -p 8080:80 --name mynginx nginx
+
+Visit http://localhost:8080
+
+### Example 2: Run MySQL with Persistent Data
+docker volume create mysqldata
+docker run -d --name mydb -e MYSQL_ROOT_PASSWORD=pass -v mysqldata:/var/lib/mysql mysql:5.7
+
+### Example 3: Debugging Inside Container
+docker exec -it mydb bash
+
+---
+
+## 10. Key Docker Concepts Recap
+
+- **Image**: Blueprint for containers (read-only, layered)
+- **Container**: Running instance of an image (a process with isolation)
+- **Volume**: Persistent storage independent of containers
+- **Network**: Communication layer between containers
+- **Registry**: Storage/distribution for images (Docker Hub, ECR, etc.)
+- **Docker Compose**: Tool to define and run multi-container apps
+
+---
+
+# Conclusion
+This guide covered essential Docker commands and concepts with practical examples:
+- Managing containers and images
+- Networking and port mapping
+- Volumes for persistent data
+- Using registries and Docker Compose
+
+Mastering these commands will enable you to effectively work with Docker in development and production environments.
