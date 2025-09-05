@@ -1,0 +1,51 @@
+Explanation of Command:
+docker run -d -P -e MYSQL_ROOT_PASSWORD=secretpass mysql:5.7
+============================================================
+
+1. docker run
+   - Starts a new container from the specified image.
+
+2. -d (detached mode)
+   - Runs the container in the background.
+   - Without this flag, logs are shown in the terminal.
+   - With it, the container continues running independently.
+
+3. -P (Publish all exposed ports)
+   - Automatically maps all exposed ports of the container to random ports on the host machine.
+   - The MySQL image exposes port 3306.
+   - With `-P`, Docker assigns a random port (e.g., 32769) on the host to forward traffic to container’s 3306.
+   - Use `docker ps` or `docker port <container_id>` to check which host port is mapped.
+
+4. -e MYSQL_ROOT_PASSWORD=secretpass
+   - Sets an environment variable inside the container.
+   - Required for MySQL official image to initialize the database.
+   - This sets the root user password to "secretpass".
+   - Without this variable, the container will fail to start.
+
+5. mysql:5.7
+   - The Docker image to run.
+   - `mysql` is the official MySQL image from Docker Hub.
+   - `5.7` specifies version 5.7 of MySQL.
+   - If the image is not present locally, Docker will pull it from Docker Hub.
+
+------------------------------------------------------------
+What Happens After Running the Command:
+- A container starts running MySQL 5.7 in the background.
+- The MySQL root password is set to "secretpass".
+- Container’s port 3306 is mapped to a random port on the host (because of `-P`).
+- You can find the mapped port using:
+    docker ps
+    docker port <container_id>
+
+------------------------------------------------------------
+How to Connect to the Database:
+From the host system, use the mapped host port:
+    mysql -h 127.0.0.1 -P <host_port> -u root -p
+
+Then enter the password:
+    secretpass
+
+------------------------------------------------------------
+Note:
+If you want to map MySQL to a fixed port instead of random, use lowercase `-p` instead of `-P`:
+    docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secretpass mysql:5.7

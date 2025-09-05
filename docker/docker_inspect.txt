@@ -1,0 +1,73 @@
+Docker Inspect and Docker Exec - Detailed Explanation
+======================================================
+
+1. docker inspect
+-----------------
+The `docker inspect` command provides detailed information in JSON format about Docker objects such as containers, images, volumes, or networks.
+
+Syntax:
+    docker inspect <container_or_image_id_or_name>
+
+Example 1 – Inspect a Container:
+    docker inspect my_container
+
+- Shows metadata about the container such as:
+  * Container ID
+  * Image used
+  * Mounts (volumes/bind mounts)
+  * Network settings (IP, ports)
+  * Environment variables
+  * State and start time
+
+Get only the container IP address:
+    docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' my_container
+
+Output example:
+    172.17.0.2
+
+Example 2 – Inspect an Image:
+    docker inspect mysql:5.7
+
+- Provides details about the mysql:5.7 image (layers, environment variables, exposed ports, entrypoint).
+
+------------------------------------------------------
+2. docker exec -it
+------------------
+The `docker exec` command allows running commands inside a running container.
+
+Flags:
+- -i : Interactive mode (keeps STDIN open).
+- -t : Allocates a pseudo-TTY (terminal).
+
+Together `-it` allows you to run commands interactively inside the container.
+
+Syntax:
+    docker exec -it <container_name_or_id> <command>
+
+Example 1 – Start a Shell Inside a Container:
+    docker exec -it my_container bash
+
+- Opens a bash shell inside the container.
+- If bash is not available, use:
+    docker exec -it my_container sh
+
+Example 2 – Run a Single Command:
+    docker exec -it my_container ls /app
+
+- Executes `ls /app` inside the container and prints the directory contents.
+
+Example 3 – Connect to MySQL Container:
+Step 1: Run a MySQL container:
+    docker run -d -e MYSQL_ROOT_PASSWORD=secretpass --name mysql57 mysql:5.7
+
+Step 2: Connect to MySQL shell inside container:
+    docker exec -it mysql57 mysql -u root -p
+
+- Enter password: secretpass
+- This opens the MySQL prompt inside the container.
+
+------------------------------------------------------
+When to Use
+-----------
+- docker inspect → For debugging and retrieving configuration details such as IPs, volumes, env variables.
+- docker exec -it → For troubleshooting, running commands, or working inside a container directly.

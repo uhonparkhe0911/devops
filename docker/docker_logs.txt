@@ -1,0 +1,89 @@
+Docker Logs - Detailed Explanation
+=================================
+
+Introduction
+------------
+In Docker, logs are an essential part of monitoring and debugging containers. 
+Each container writes logs that can be retrieved using the `docker logs` command. 
+These logs are collected from the container's standard output (stdout) and standard error (stderr).
+
+Default Logging Driver
+----------------------
+By default, Docker uses the `json-file` logging driver. This means logs are stored as JSON locally on the host. 
+However, Docker supports multiple logging drivers such as:
+- `json-file` (default)
+- `syslog`
+- `journald`
+- `gelf`
+- `fluentd`
+- `awslogs`
+- `splunk`
+- `etwlogs`
+- `gcplogs`
+- `none`
+
+You can configure the logging driver at container run time or daemon level.
+
+Checking Logs
+-------------
+The `docker logs` command is used to fetch logs for a container.
+
+Basic Syntax:
+    docker logs <container_id_or_name>
+
+Common Options:
+- `-f` / `--follow` : Stream logs continuously (like `tail -f`).
+- `--tail <number>` : Show last N lines of logs (e.g., `--tail 100`).
+- `--since <time>`  : Show logs since a timestamp (e.g., `--since 10m` for last 10 minutes).
+- `--until <time>`  : Show logs until a timestamp.
+
+Examples:
+    docker logs my_container
+    docker logs -f my_container
+    docker logs --tail 50 my_container
+    docker logs --since 2023-09-01T12:00:00 my_container
+    docker logs --since 10m --until 1m my_container
+
+Container Logging Configuration
+-------------------------------
+When running a container, you can configure logging driver and options:
+
+Example:
+    docker run -d --name myapp \
+        --log-driver json-file \
+        --log-opt max-size=10m \
+        --log-opt max-file=3 \
+        nginx
+
+Explanation:
+- `max-size=10m` → Each log file will be max 10MB.
+- `max-file=3`   → Keep 3 log files (rotate automatically).
+
+Persistent and Centralized Logging
+----------------------------------
+While `docker logs` works for quick debugging, in production you often use centralized logging solutions like:
+- ELK/EFK Stack (Elasticsearch, Logstash/Fluentd, Kibana)
+- Splunk
+- CloudWatch (AWS)
+- Google Cloud Logging
+- Datadog
+
+These systems collect logs from multiple containers/nodes for analysis and monitoring.
+
+Limitations of `docker logs`
+----------------------------
+1. Works only with certain logging drivers (`json-file`, `journald`).
+2. If the container is removed, logs are lost (unless persisted externally).
+3. Not ideal for large-scale distributed systems.
+
+Best Practices
+--------------
+- Use `--log-opt` for log rotation to avoid disk space issues.
+- For production, configure a centralized logging solution.
+- Avoid writing excessive logs inside containers (use proper log levels).
+- Use timestamps for easier debugging (`docker logs --timestamps`).
+
+Conclusion
+----------
+`docker logs` is a powerful command for developers and operators to quickly access container logs. 
+For long-term and scalable logging, integrate Docker with centralized logging systems.
