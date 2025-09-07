@@ -1,0 +1,149 @@
+Docker Compose - Detailed Explanation with Example
+
+1. What is Docker Compose?
+Docker Compose is a tool that allows you to define and manage multi-container applications.
+Instead of running 'docker run' commands manually for each container, you define everything in a docker-compose.yml file.
+
+Benefits:
+- Simplifies multi-container setup
+- One command (docker-compose up) to start everything
+- Service orchestration (dependencies, networking)
+- Reproducibility (same setup for dev, test, prod)
+- Scaling support
+
+------------------------------------------------------------
+2. Docker Compose File Structure
+
+A docker-compose.yml defines:
+1. version – Compose file format.
+2. services – Each container (app, db, etc.).
+3. networks – Communication between containers.
+4. volumes – Data persistence.
+
+------------------------------------------------------------
+3. Important Docker Compose Keywords
+
+- version: Defines the compose file format (e.g., "3.9").
+- services: Defines different containers.
+    - image: Pre-built image from Docker Hub.
+    - build: Path to Dockerfile to build custom image.
+    - ports: Maps host to container ports.
+    - volumes: Mounts persistent data.
+    - environment: Environment variables.
+    - depends_on: Specifies service dependencies.
+- networks: Defines custom networks for inter-container communication.
+- volumes: Defines named volumes for persistence.
+
+------------------------------------------------------------
+4. Example Project: Python Flask + MySQL
+
+Project Structure:
+myproject/
+│── docker-compose.yml
+│── app/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── app.py
+
+Step 1: Flask Application (app/app.py)
+--------------------------------------
+from flask import Flask
+import mysql.connector
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    conn = mysql.connector.connect(
+        host="db",
+        user="root",
+        password="secretpass",
+        database="testdb"
+    )
+    cursor = conn.cursor()
+    cursor.execute("SELECT 'Hello from MySQL!'")
+    result = cursor.fetchone()
+    return result[0]
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
+Step 2: Requirements File (app/requirements.txt)
+------------------------------------------------
+flask
+mysql-connector-python
+
+Step 3: Dockerfile for Flask App (app/Dockerfile)
+-------------------------------------------------
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 5000
+CMD ["python", "app.py"]
+
+Step 4: Docker Compose File (docker-compose.yml)
+------------------------------------------------
+version: "3.9"
+
+services:
+  web:
+    build: ./app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=secretpass
+      - MYSQL_DB=testdb
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: secretpass
+      MYSQL_DATABASE: testdb
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+
+------------------------------------------------------------
+5. Running the Project
+
+Build & start containers:
+docker-compose up -d --build
+
+Check running containers:
+docker-compose ps
+
+Open browser: http://localhost:5000
+Output: Hello from MySQL!
+
+------------------------------------------------------------
+6. Useful Docker Compose Commands
+
+- docker-compose up       → Start services.
+- docker-compose up -d    → Start in background.
+- docker-compose down     → Stop and remove services.
+- docker-compose build    → Build/rebuild services.
+- docker-compose logs     → View logs.
+- docker-compose exec <service> bash → Open shell in a container.
+- docker-compose scale web=3 → Scale services.
+
+------------------------------------------------------------
+7. Benefits of Docker Compose
+
+- One command to bring up entire app stack.
+- Easy configuration using YAML.
+- Reusable for local dev, CI/CD, production.
+- Simplifies networking (services talk by name).
+- Built-in data persistence with volumes.

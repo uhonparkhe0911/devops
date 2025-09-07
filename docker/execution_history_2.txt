@@ -1,0 +1,111 @@
+    1  sudo -i
+    2  exit
+    3  docker images
+    4  docker run hello-world
+    5  sudo groupadd docker
+    6  docker run hello-world
+    7  sudo systemctl enable docker.service
+    8  sudo systemctl enable containerd.service
+    9  docker ps -a
+   10  docker --version
+   11  docker pull nginx
+   12  docker pull nginx:stable-alpine-perl
+   13  docker images
+   14  docker ps
+   15  docker run --name myweb -p 7090:80 -d nginx
+   16  history
+   17  docker ps
+   18  docker stop 3595509ac6a3
+   19  docker ps
+   20  docker ps -a
+   21  docker start myweb
+   22  docker ps
+   23  ps -f
+   24  ps -ef
+   25  cd /var/lib/docker/
+   26  ls
+   27  sudo -i
+   28  docker ps
+   29  docker exec myweb mkdir utkarsh
+   30  docker exec myweb ls /
+   31  docker exec myweb /bin/bash
+   32  docker exec -it myweb /bin/bash
+   33  docker images
+   34  docker rmi nginx:stable-alpine-perl
+   35  docker ps
+   36  docker stop myweb
+   37  docker rm myweb
+   38  docker rmi nginx
+   39  docker ps
+   40  socker images
+   41  docker images
+   42  history
+   43  history > docker_commands_history.txt
+   44  ls
+   45  cat docker_commands_history.txt 
+   46  ls
+   47  pwd
+   48  exit
+   49  ls
+   50  docker images
+   51  docker rmi hello-world:latest
+   52  ls
+   53  docker ps
+   54  doker ps -a
+   55  docker ps -a
+   56  docker rm hello-world
+   57  docker images
+   58  docker pull nginx
+   59  docker inspect nginx
+   60  docker run nginx -d 
+   61  docker run -d -P nginx
+   62  docker ps
+   63  docker logs nginx
+   64  docker ps
+   65  docker logs 5cbceecaaf85
+   66  docker run -d -P mysql:5.7
+   67  docker ps
+   68  docker ps -a
+   69  docker logs ccd93edcb1f5
+   70  docker run -d -P -e MYSQL_ROOT_PASSWORD=secretpass mysql:5.7 -t sqlutkarsh
+   71  docker ps -a
+   72  docker ps
+   73  docker run -d -P -e MYSQL_ROOT_PASSWORD=secretpass mysql:5.7
+   74  docker ps
+   75  docker logs sad_easley
+   76  docker ps
+   77  docker port c7ef8d57d4eb
+   78  docker ps
+   79  docker stop c7ef8d57d4eb 
+   80  docker stop 5cbceecaaf85
+   81  docker ps
+   82  docker images
+   83  docker inspect ysql
+   84  docker inspect mysql
+   85  docker images
+   86  docker inspect mysql:5.7
+   87  ls
+   88  pwd
+   89  mkdir -p vprodbdata
+   90  docker run --name vprodb -d -e MYSQL_ROOT_PASSWORD=secretpass -p 3030:3306 -v /home/ubuntu/vprodbdata:/var/lib/mysql mysql:5.7
+   91  ls
+   92  cd vprodbdata/
+   93  ls
+   94  docker ps
+   95  docker exec -it vprodb /bin/bash
+   96  cd ..
+   97  docker volume create mydbdatavolume
+   98  docker volumne
+   99  docker volume
+  100  docker volume ls
+  101  docker ps
+  102  docker stop vprodb
+  103  ls
+  104  docker run --name vprodb -d -e MYSQL_ROOT_PASSWORD=secretpass -p 3030:3306 -v mydbdatavolume:/var/lib/mysql mysql:5.7
+  105  docker ps
+  106  docker rm vprodb
+  107  docker run --name vprodb -d -e MYSQL_ROOT_PASSWORD=secretpass -p 3030:3306 -v mydbdatavolume:/var/lib/mysql mysql:5.7
+  108  docker ps
+  109  sudo -i
+  110  history
+  111  history > history_2.txt

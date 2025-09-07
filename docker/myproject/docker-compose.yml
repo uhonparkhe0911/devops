@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  web:
+    build: ./app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=secretpass
+      - MYSQL_DB=testdb
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: secretpass
+      MYSQL_DATABASE: testdb
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+

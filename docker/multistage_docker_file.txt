@@ -1,0 +1,82 @@
+Multi-Stage Dockerfile - Detailed Explanation and Examples
+
+------------------------------------------------------------
+1. What is a Multi-Stage Dockerfile?
+A multi-stage Dockerfile allows you to use multiple FROM instructions in a single Dockerfile.
+Each FROM starts a new build stage. You can selectively copy artifacts (compiled binaries, dependencies, build outputs)
+from one stage to another. This produces small, efficient images.
+
+Main goal: Reduce image size and improve security.
+
+------------------------------------------------------------
+2. Why Use Multi-Stage Dockerfiles?
+- Separate build environment (compilers, dependencies) from runtime environment.
+- Only keep necessary artifacts in the final image.
+- Cleaner, smaller, and faster images.
+- Reduced attack surface.
+
+------------------------------------------------------------
+3. Example 1: Go Application (Multi-stage Build)
+
+# Stage 1: Build
+FROM golang:1.20 AS builder
+
+WORKDIR /app
+COPY . .
+
+# Build the Go binary
+RUN go build -o myapp
+
+# Stage 2: Run
+FROM alpine:3.18
+
+WORKDIR /app
+
+# Copy only the compiled binary from builder stage
+COPY --from=builder /app/myapp .
+
+# Run the binary
+CMD ["./myapp"]
+
+Explanation:
+- First stage ("builder") compiles the Go app.
+- Second stage ("alpine") just contains the binary → smaller image.
+
+------------------------------------------------------------
+4. Example 2: Node.js + React App
+
+# Stage 1: Build React App
+FROM node:18 AS builder
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
+
+# Copy build artifacts from previous stage
+COPY --from=builder /app/build /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+Explanation:
+- Stage 1 builds React static files.
+- Stage 2 uses Nginx to serve them.
+- Final image is lightweight since it excludes node_modules and build tools.
+
+------------------------------------------------------------
+5. Key Benefits of Multi-Stage Builds
+1. Smaller images – No compilers or unnecessary dependencies in final image.
+2. Security – Reduced attack surface with only production dependencies.
+3. Cleaner separation – Build stage vs runtime stage.
+4. Faster deployments – Smaller images transfer and start faster.
+
+------------------------------------------------------------
+6. Summary
+Multi-stage Dockerfiles are an advanced way to build Docker images by separating build and runtime environments.
+They are particularly useful for applications written in compiled languages (Go, Java, C++) and frontend apps
+(React, Angular, Vue) where the build step produces final artifacts.
