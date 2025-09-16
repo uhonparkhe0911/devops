@@ -1,0 +1,39 @@
+vagrant@ubuntu-jammy:~$ cat execution_history.txt
+    1  cat /etc/os-release
+    2  sudo -i
+    3  docker images
+    4  exit
+    5  docker images
+    6  docker compose ls
+    7  cd /vagrant/
+    8  ls
+    9  docker compose up -d
+   10  docker compose ls
+   11  docker compose ps
+   12  ip addr show
+   13  docker images
+   14  docker login
+   15  docker images
+   16  docker push kubeutkarsh0911/vprofileapp:latest
+   17  docker push kubeutkarsh0911/vprofileweb:latest
+   18  docker push kubeutkarsh0911/vprofiledb:latest
+   19  docker images
+   20  docker tag rabbitmq:latest kubeutkarsh0911/rabbitq:latest
+   21  docker push kubeutkarsh0911/rabbitq:latest
+   22  docker tag memcached:latest kubeutkarsh0911/memcached:latest
+   23  docker push kubeutkarsh0911/memcached:latest
+   24  ls
+   25  docker compose dow
+   26  docker compose down
+   27  docker volume ls
+   28  docker volume rm vagrant_vproappdata vagrant_vprodbdata
+   29  ls
+   30  docker volume prune
+   31  ls
+   32  docker system prune -a
+   33  vagrant destroy
+   34  cd ..
+   35  exit
+   36  ls
+   37  history
+   38  history > execution_history.txt

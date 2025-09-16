@@ -1,0 +1,72 @@
+Kubernetes Architecture & Components
+=================================
+
+High-level Overview
+-------------------
+Kubernetes is a distributed system with a Control Plane (master components) and Worker Nodes. 
+The Control Plane manages the cluster state, and the Worker Nodes run workloads (Pods).
+
+Control Plane Components
+------------------------
+- API Server: Front-end to Kubernetes, exposes REST API, validates and processes requests.
+- etcd: Distributed key-value store, holds all cluster state and config.
+- Scheduler: Assigns pods to nodes based on resource availability and constraints.
+- Controller Manager: Runs controllers (ReplicaSet, Deployment, Node controller, etc.) to reconcile desired vs actual state.
+- Cloud Controller Manager: Integrates with cloud provider APIs for LB, storage, etc.
+
+Worker Node Components
+----------------------
+- kubelet: Node agent, ensures containers are running in Pods, reports status.
+- Container Runtime: Pulls images, runs containers (containerd, CRI-O, etc.).
+- kube-proxy: Handles Services networking, sets up rules for forwarding traffic to pods.
+
+Key Kubernetes Objects
+----------------------
+- Pod: Smallest deployable unit, holds containers.
+- ReplicaSet: Ensures desired number of replicas.
+- Deployment: Declarative updates for pods and ReplicaSets.
+- StatefulSet: Manages stateful apps with stable IDs.
+- DaemonSet: Ensures one pod per node for logging/monitoring agents.
+- Job/CronJob: Batch/periodic tasks.
+- Service: Stable network endpoint for pods (ClusterIP, NodePort, LoadBalancer).
+- Ingress: HTTP(S) routing into services via controllers.
+- ConfigMap/Secret: Configuration and sensitive data injection.
+- PersistentVolume/PersistentVolumeClaim: Abstracted storage management.
+- Namespace: Logical grouping of resources.
+
+Networking
+----------
+- Pod-per-IP model with flat networking.
+- CNI plugins (Calico, Flannel, Weave, Cilium) handle networking.
+- NetworkPolicy restricts traffic between pods.
+
+Security
+--------
+- RBAC for fine-grained permissions.
+- Admission Controllers for policy enforcement.
+- Secrets encryption and TLS for secure communication.
+
+Autoscaling & Self-healing
+--------------------------
+- Horizontal Pod Autoscaler: scales replicas based on metrics.
+- Vertical Pod Autoscaler: adjusts resources per container.
+- Cluster Autoscaler: adjusts node pool size.
+- Liveness, Readiness, Startup probes for health management.
+
+Extensibility
+-------------
+- CustomResourceDefinitions (CRDs): add new API objects.
+- Operators: extend K8s with domain-specific logic for apps like DBs, Kafka.
+
+HA & Observability
+------------------
+- Control Plane: multiple API servers, etcd quorum, leader election for controllers/scheduler.
+- Monitoring: Prometheus, Grafana.
+- Logging: Fluentd/Elastic/Loki.
+- Tracing: Jaeger, Zipkin.
+
+Control Loop
+------------
+K8s continuously reconciles desired state (from manifests) with actual state 
+via controllers and the scheduler.
+
