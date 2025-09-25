@@ -1,0 +1,134 @@
+KUBERNETES SERVICES - DETAILED REFERENCE
+========================================
+
+WHAT IS A SERVICE?
+------------------
+- Pods are ephemeral: IPs change when they are recreated.
+- A Service provides a stable network identity (IP + DNS) to access pods reliably.
+- It acts as an abstraction + load balancer across multiple pods.
+
+KEY FEATURES
+------------
+1. Stable access even if pods restart.
+2. Load balancing across healthy pods.
+3. Service discovery using DNS names.
+4. Can expose applications inside or outside the cluster.
+
+
+TYPES OF SERVICES
+-----------------
+
+1. ClusterIP (default)
+----------------------
+- Exposes the service on an internal cluster IP.
+- Accessible only within the cluster.
+- Use Case: Internal communication between microservices.
+
+YAML Example:
+-------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  type: ClusterIP
+  selector:
+    app: myapp
+  ports:
+  - port: 80
+    targetPort: 8080
+
+
+2. NodePort
+-----------
+- Exposes the service on each node’s IP at a static port (30000–32767).
+- Accessible from outside the cluster as <NodeIP>:<NodePort>.
+- Use Case: Simple external access (development/testing).
+
+YAML Example:
+-------------
+spec:
+  type: NodePort
+  selector:
+    app: myapp
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30080
+
+
+3. LoadBalancer
+---------------
+- Exposes the service externally using a cloud provider’s load balancer.
+- Assigns a public IP address for external access.
+- Use Case: Production workloads that need public access.
+
+YAML Example:
+-------------
+spec:
+  type: LoadBalancer
+  selector:
+    app: myapp
+  ports:
+  - port: 80
+    targetPort: 8080
+
+
+4. ExternalName
+---------------
+- Maps a service to an external DNS name.
+- No proxying, just DNS redirection.
+- Use Case: Accessing external services with a consistent name.
+
+YAML Example:
+-------------
+spec:
+  type: ExternalName
+  externalName: example.com
+
+
+HEADLESS SERVICE
+----------------
+- Set clusterIP: None → No cluster IP is assigned.
+- DNS resolves directly to individual pod IPs.
+- Use Case: Stateful applications (databases, StatefulSets).
+
+YAML Example:
+-------------
+spec:
+  clusterIP: None
+  selector:
+    app: myapp
+
+
+HOW SERVICES FIND PODS
+----------------------
+- Services use selectors to match pods by labels.
+- Kubernetes automatically updates Endpoints when pods are added or removed.
+- If no selector is defined, you must manually manage Endpoints.
+
+Example selector:
+-----------------
+  selector:
+    app: myapp
+
+
+SERVICE DISCOVERY & DNS
+-----------------------
+- Each service gets a DNS name: <service>.<namespace>.svc.cluster.local
+- Inside the cluster, you can call:
+  curl http://my-service:80
+
+
+SERVICE VS INGRESS
+------------------
+- Service: Exposes pods (ClusterIP, NodePort, LoadBalancer, ExternalName).
+- Ingress: Provides HTTP/HTTPS routing, TLS termination, virtual hosts.
+
+SUMMARY
+-------
+- ClusterIP: Internal communication (default).
+- NodePort: Basic external access on a static port.
+- LoadBalancer: Public access through a cloud load balancer.
+- ExternalName: Alias to an external DNS name.
+- Headless Service: Direct pod-to-pod access via DNS.

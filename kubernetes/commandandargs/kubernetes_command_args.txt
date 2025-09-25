@@ -1,0 +1,94 @@
+KUBERNETES COMMAND, ARGS, AND ENTRYPOINT IN DETAIL
+==================================================
+
+1. INTRODUCTION
+---------------
+In Kubernetes, every container inside a Pod runs a process when it starts. 
+You can control how this process starts by using the fields:
+
+- command (Kubernetes) → corresponds to Docker ENTRYPOINT
+- args (Kubernetes) → corresponds to Docker CMD
+
+These allow overriding the default behavior defined in the Dockerfile of the image.
+
+
+2. DOCKER BACKGROUND
+---------------------
+In Dockerfile, we typically define startup behavior with:
+
+- ENTRYPOINT: The main executable that always runs when the container starts.
+- CMD: Default arguments for the ENTRYPOINT, or default executable if ENTRYPOINT is not set.
+
+Example Dockerfile:
+-------------------
+FROM ubuntu
+ENTRYPOINT ["echo"]
+CMD ["Hello World"]
+
+- Running the container normally → "Hello World"
+- Running with: docker run image Bye → prints "Bye"
+
+
+3. MAPPING DOCKER TO KUBERNETES
+-------------------------------
+Kubernetes provides two fields in Pod spec:
+
+- command: Overrides Docker ENTRYPOINT
+- args: Overrides Docker CMD
+
+Example Pod:
+------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cmd-args-demo
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    command: ["echo"]
+    args: ["Hello K8s!"]
+
+Result: executes → echo Hello K8s!
+
+
+4. OVERRIDE SCENARIOS
+----------------------
+Case | Dockerfile | Kubernetes Pod | Final Execution
+-----|------------|----------------|-----------------
+No override | ENTRYPOINT: ["echo"], CMD: ["Hello"] | No command, no args | echo Hello
+Override args only | ENTRYPOINT: ["echo"], CMD: ["Hello"] | args: ["Bye"] | echo Bye
+Override command only | ENTRYPOINT: ["echo"], CMD: ["Hello"] | command: ["date"] | date
+Override both | ENTRYPOINT: ["echo"], CMD: ["Hello"] | command: ["ls"], args: ["-l"] | ls -l
+
+
+5. USE CASES
+-------------
+1. Debugging
+   Override with sleep to keep pod alive:
+   command: ["sleep"]
+   args: ["3600"]
+
+2. Running custom scripts
+   command: ["/bin/sh", "-c"]
+   args: ["echo 'Starting custom task' && my-app --flag"]
+
+3. Temporary testing
+   Override to run curl or ping instead of main app.
+
+
+6. BEST PRACTICES
+------------------
+- Keep ENTRYPOINT in Dockerfile as the main app logic.
+- Use Kubernetes command/args for environment-specific overrides.
+- Use initContainers for setup tasks instead of hijacking main entrypoint.
+- Wrap long commands in scripts rather than putting them directly in command/args.
+
+
+7. SUMMARY
+-----------
+- command in Kubernetes → overrides ENTRYPOINT in Dockerfile
+- args in Kubernetes → overrides CMD in Dockerfile
+- Use for debugging, testing, or customization when needed.
+
+==================================================

@@ -1,0 +1,84 @@
+
+KUBECTL LOGS - DETAILED REFERENCE
+=================================
+
+Command:
+  kubectl logs <pod-name>
+
+Purpose:
+  - Fetch logs from a container running inside a pod.
+
+Default Behavior:
+  - Displays logs from the first container in the pod (if only one container exists).
+
+Options:
+  -c <container-name>         → Get logs from a specific container in a multi-container pod.
+  -f, --follow                → Stream logs in real-time (similar to 'tail -f').
+  --previous                  → Get logs from the last terminated container (useful in CrashLoopBackOff).
+  --all-containers=true       → Fetch logs from all containers in the pod.
+  --since=10s / --since=5m    → Show logs newer than a relative time (e.g., last 10 seconds, last 5 minutes).
+  --tail=100                  → Show only the last N lines of logs.
+  --timestamps                → Add timestamps to each log line.
+
+Examples:
+  1. kubectl logs my-pod
+     → Get logs of default container in 'my-pod'.
+
+  2. kubectl logs my-pod -c nginx
+     → Get logs from the 'nginx' container inside 'my-pod'.
+
+  3. kubectl logs -f my-pod
+     → Stream logs continuously from the pod.
+
+  4. kubectl logs my-pod --previous
+     → See logs from the previous crashed instance of the container.
+
+  5. kubectl logs -l app=myapp --all-containers=true
+     → Get logs from all containers across all pods with label app=myapp.
+
+
+Use Cases:
+  - Debug application crashes.
+  - Monitor real-time application behavior.
+  - Capture error traces when pods go into CrashLoopBackOff.
+  - Verify application output during deployments.
+
+Limitations:
+  - Does not provide configuration details of the pod.
+  - Does not show scheduling errors or cluster events.
+  - For non-running pods (Pending state), logs may not be available.
+
+
+---------------------------------------------------------
+COMPARISON WITH OTHER KUBECTL COMMANDS
+---------------------------------------------------------
+
+1. kubectl logs
+   - Focus: Application runtime logs (stdout, stderr).
+   - When to use: Debugging app-level issues inside containers.
+
+2. kubectl get pod -o yaml
+   - Focus: Full pod specification and status in YAML.
+   - When to use: Auditing configuration, debugging misconfigurations.
+
+3. kubectl describe pod <pod>
+   - Focus: Human-readable status + events.
+   - When to use: Debugging scheduling issues, pending pods, restarts.
+
+4. kubectl describe deployment <deployment>
+   - Focus: Deployment-level view (replicas, rollout, scaling).
+   - When to use: Debugging rollout or scaling failures.
+
+Complementary Workflow:
+   - Start with 'kubectl get pods' to check status.
+   - If pod is failing → 'kubectl logs' for app errors.
+   - If pod is pending → 'kubectl describe pod' for events.
+   - If rollout is stuck → 'kubectl describe deployment'.
+   - For deep config check → 'kubectl get pod -o yaml'.
+
+Summary:
+   - Logs → App insights.
+   - Describe pod → Pod health/events.
+   - Describe deployment → Controller behavior.
+   - Get -o yaml → Full raw details.
+

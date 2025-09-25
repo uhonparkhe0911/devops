@@ -1,0 +1,127 @@
+
+Kubernetes Namespaces – Detailed Guide
+======================================
+
+1. What is a Kubernetes Namespace?
+---------------------------------
+A Namespace in Kubernetes is a virtual cluster inside a physical cluster. It allows you to partition cluster resources between multiple users or applications. 
+Think of it like folders in a file system — they help separate and organize things, but they still share the same underlying structure.
+
+2. Why Use Namespaces?
+---------------------
+1. Resource Isolation
+   - Separate environments like development, staging, and production.
+   - Prevent accidental interference between teams or projects.
+
+2. Access Control
+   - Use Role-Based Access Control (RBAC) to grant permissions on a per-namespace basis.
+
+3. Resource Quotas
+   - Control how much CPU, memory, or storage a namespace can consume.
+
+4. Organization
+   - Helps group related objects like Pods, Services, ConfigMaps, etc.
+
+3. Default Namespaces in Kubernetes
+----------------------------------
+| Namespace       | Description |
+|-----------------|-------------|
+| default         | Used for resources without a specific namespace |
+| kube-system     | Used by system components like kube-dns, kube-proxy, etc. |
+| kube-public     | Public resources accessible to all users, typically read-only |
+| kube-node-lease | Used for node heartbeat tracking |
+
+You can create custom namespaces for your workloads or projects.
+
+4. How to Create a Namespace
+---------------------------
+Using kubectl:
+    kubectl create namespace my-namespace
+
+Using YAML file:
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-namespace
+
+Apply it with:
+    kubectl apply -f namespace.yaml
+
+5. How to Use Namespaces
+-----------------------
+1. Create a Pod in a specific namespace:
+    kubectl run nginx --image=nginx --namespace=my-namespace
+
+Or in YAML:
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  namespace: my-namespace
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+
+2. Get resources in a namespace:
+    kubectl get pods --namespace=my-namespace
+
+3. Set a default namespace for your context:
+    kubectl config set-context --current --namespace=my-namespace
+
+6. Resource Quotas and Limits
+----------------------------
+Example of limiting CPU and memory in a namespace:
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: mem-cpu-quota
+  namespace: my-namespace
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+
+7. Role-Based Access Control (RBAC)
+----------------------------------
+Example: Allow read access only in a namespace:
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: my-namespace
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+
+8. Network Policies
+-----------------
+Namespaces can be used with NetworkPolicies to control how traffic flows between pods.
+You can allow or block traffic based on namespaces, labels, and IP ranges.
+
+9. Best Practices
+----------------
+✔️ Use namespaces to separate environments (dev, test, prod)
+✔️ Apply resource quotas and limits to avoid noisy neighbors
+✔️ Use RBAC to restrict access per namespace
+✔️ Avoid overusing namespaces — keep them meaningful and manageable
+✔️ Use labels and annotations for further organization
+
+10. Limitations and Considerations
+--------------------------------
+- Namespaces don’t isolate network or storage by default — you need NetworkPolicies and proper PV configurations.
+- Some cluster-wide resources like nodes and persistent volumes are shared across namespaces.
+- Too many namespaces can add overhead to cluster management.
+
+11. Next Steps / Related Concepts
+-------------------------------
+- RBAC (Role-Based Access Control) for fine-grained permissions
+- NetworkPolicies for controlling traffic
+- ResourceQuota & LimitRange for resource control
+- Multi-tenancy patterns using namespaces
+- Helm charts often deploy resources into specific namespaces
+
+End of Document
