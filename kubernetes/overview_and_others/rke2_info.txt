@@ -1,0 +1,322 @@
+RKE2 (Rancher Kubernetes Engine 2) - Complete Guide
+
+====================================================================
+
+1. Introduction to RKE2
+
+---
+
+* Rancher's next-generation Kubernetes distribution.
+* Focus on security, compliance, and simplicity.
+* CIS Benchmark compliant, SELinux enabled by default.
+* Uses containerd as default container runtime.
+* Fully conformant with Kubernetes APIs.
+
+Key Features:
+
+* Hardened Kubernetes distribution.
+* Supports air-gapped and public cloud deployments.
+* Integrated etcd for cluster storage.
+
+====================================================================
+
+2. Architecture of RKE2
+
+---
+
+* Modular architecture: control plane nodes, worker nodes, optional agent nodes.
+
+2.1 Control Plane Nodes
+
+* Runs kube-apiserver, kube-controller-manager, kube-scheduler, etcd.
+* Supports High Availability (HA) setups.
+
+2.2 Worker Nodes
+
+* Runs application workloads.
+* Runs Kubelet and Containerd.
+
+2.3 Agent Nodes
+
+* Optional for dedicated workload nodes.
+
+====================================================================
+
+3. Core Components
+
+---
+
+| Component               | Description                                                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| kube-apiserver          | Central API interface.                                                                          |
+| kube-controller-manager | Executes control loops.                                                                         |
+| kube-scheduler          | Assigns pods to nodes.                                                                          |
+| etcd                    | Distributed key-value store.                                                                    |
+| kubelet                 | Ensures containers are running.                                                                 |
+| containerd              | Default container runtime.                                                                      |
+| CNI (Calico/Canal)      | Networking plugin, Calico provides advanced network policies, pod isolation, and IP management. |
+| CoreDNS                 | DNS service for pods.                                                                           |
+| helm-controller         | Manages Helm charts.                                                                            |
+| metrics-server          | Collects resource metrics.                                                                      |
+| rke2-agent/server       | System services for nodes.                                                                      |
+
+====================================================================
+
+4. Security Features
+
+---
+
+* SELinux enforced.
+* TLS everywhere.
+* Etcd encryption at rest.
+* Pod Security Admission enabled.
+* Strict RBAC policies.
+
+====================================================================
+
+5. Networking
+
+---
+
+* CNI plugins: Calico or Canal.
+* Calico Features:
+
+  * Supports network policies for security.
+  * Pod IP management and routing.
+  * Encryption of pod-to-pod traffic.
+* IPv4/IPv6 support.
+* Overlay network support.
+
+====================================================================
+
+6. Storage
+
+---
+
+* Supports CSI drivers.
+* Cloud or on-prem volumes.
+* Etcd stores persistent cluster state.
+
+====================================================================
+
+7. Installation & Deployment
+
+---
+
+7.1 Single-node
+
+```
+curl -sfL https://get.rke2.io | sh -
+systemctl enable rke2-server.service
+systemctl start rke2-server.service
+```
+
+7.2 Multi-node / HA
+
+* Install rke2-server on control plane nodes.
+* Install rke2-agent on worker nodes using token.
+
+7.3 Configurations
+
+* File: /etc/rancher/rke2/config.yaml
+* Options: node-taint, disable, write-kubeconfig-mode, tls-san.
+
+====================================================================
+
+8. Ingress Controllers
+
+---
+
+* NGINX Ingress: path/host-based routing, TLS termination, load balancing.
+* Alternative: Traefik or HAProxy.
+
+====================================================================
+
+9. Service Mesh: Istio
+
+---
+
+* Provides mTLS, traffic routing, observability.
+* Sidecar proxy injection required.
+* Monitors via Prometheus/Grafana.
+
+====================================================================
+
+10. Load Balancers
+
+---
+
+* Required for HA clusters.
+* Distribute traffic to control plane nodes.
+* Cloud LBs: AWS ELB, GCP LB.
+* On-prem: HAProxy, F5, MetalLB.
+
+====================================================================
+
+11. Docker / Container Registries
+
+---
+
+* Uses containerd but compatible with Docker registries.
+
+11.1 Creating a Private Registry Example:
+
+* Install a registry using Docker:
+
+```
+docker run -d -p 5000:5000 --name my-registry --restart=always registry:2
+```
+
+* Push an image:
+
+```
+docker tag nginx localhost:5000/nginx
+docker push localhost:5000/nginx
+```
+
+* Configure RKE2 to pull from private registry:
+  File: /etc/rancher/rke2/registries.yaml
+
+```yaml
+mirrors:
+  "localhost:5000":
+    endpoint:
+      - "http://localhost:5000"
+configs:
+  "localhost:5000":
+    auth:
+      username: "myuser"
+      password: "mypassword"
+```
+
+====================================================================
+
+12. TLS Certificates
+
+---
+
+* TLS is used for securing API server, ingress, and service communications.
+* Auto-generated self-signed certificates by RKE2.
+* Custom TLS example:
+
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-tls-secret
+  namespace: default
+type: kubernetes.io/tls
+data:
+  tls.crt: <base64_cert>
+  tls.key: <base64_key>
+```
+
+* Let’s Encrypt via cert-manager can automate TLS provisioning.
+
+====================================================================
+
+13. Multi-node High Availability (HA) Cluster
+
+---
+
+13.1 Control Plane HA
+
+* 3 or 5 nodes recommended.
+* Runs kube-apiserver, controller-manager, scheduler, etcd.
+* Requires external load balancer.
+
+13.2 Worker Nodes
+
+* Run application workloads.
+* Scalable independently.
+
+13.3 Steps for HA
+
+1. Install rke2-server on control plane nodes.
+2. Configure shared token.
+3. Deploy rke2-agent on worker nodes.
+4. Configure load balancer.
+
+====================================================================
+
+14. Linking Two Clusters (Multi-cluster)
+
+---
+
+14.1 Approaches
+
+* Rancher-managed clusters.
+* KubeFed (Kubernetes Federation).
+* Service mesh across clusters (Istio/Linkerd).
+
+14.2 Steps
+
+1. Ensure kubeconfigs for both clusters.
+2. Network connectivity between clusters.
+3. Use Rancher or kubefedctl to federate resources.
+4. Configure ingress routing rules.
+5. Optional: deploy multi-cluster Istio for mTLS.
+
+====================================================================
+
+15. Observability & Backup
+
+---
+
+* Prometheus + Grafana for metrics.
+* Loki / Fluentd for logging.
+* Etcd snapshots for disaster recovery:
+
+```
+rke2 etcd-snapshot save --name snapshot1
+rke2 etcd-snapshot restore --name snapshot1
+```
+
+====================================================================
+
+16. Security Best Practices
+
+---
+
+* SELinux enabled.
+* Pod Security Admission.
+* RBAC enforced.
+* Etcd encryption.
+* Private registries with signed images.
+
+====================================================================
+
+17. Key Commands
+
+---
+
+```
+# Check status
+systemctl status rke2-server
+systemctl status rke2-agent
+
+# List nodes
+kubectl get nodes
+
+# Deploy pod
+kubectl run nginx --image=nginx
+
+# Etcd snapshot
+rke2 etcd-snapshot save
+```
+
+====================================================================
+
+18. Summary
+
+---
+
+* Secure, enterprise-grade Kubernetes distribution.
+* Uses containerd.
+* HA clusters with external load balancers.
+* Supports ingress controllers, Istio, TLS, private registries, Calico CNI.
+* Multi-cluster management via Rancher or KubeFed.
+* Observability with Prometheus/Grafana and logging.
+* Disaster recovery via etcd snapshots.
+
+====================================================================

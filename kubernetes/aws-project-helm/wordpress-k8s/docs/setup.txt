@@ -1,0 +1,15 @@
+Minimal YAML Components You Need
+
+Secrets – store DB credentials
+
+PersistentVolumeClaim (PVC) – for MySQL + WordPress data
+
+Deployment – for MySQL
+
+Deployment – for WordPress
+
+Service – MySQL ClusterIP
+
+Service – WordPress (ClusterIP or LoadBalancer)
+
+Ingress – for domain mapping

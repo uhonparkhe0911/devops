@@ -1,0 +1,101 @@
+Kubernetes ConfigMaps in Detail
+================================
+
+1. What is a ConfigMap?
+------------------------
+- A ConfigMap is an API object to store non-confidential configuration data in key-value pairs.
+- Decouples configuration from container images.
+- Best for storing environment variables, command-line arguments, and configuration files.
+- Not for sensitive data (use Secrets instead).
+
+2. Ways to Create a ConfigMap
+------------------------------
+a) From Literal Values:
+    kubectl create configmap app-config --from-literal=APP_MODE=production --from-literal=TIMEOUT=30
+
+b) From a File:
+    kubectl create configmap app-config --from-file=config.properties
+
+    File: config.properties
+    -----------------------
+    APP_MODE=production
+    TIMEOUT=30
+
+c) From a Directory:
+    kubectl create configmap app-config --from-file=/etc/config-dir/
+
+d) From YAML Manifest:
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: app-config
+    data:
+      APP_MODE: "production"
+      TIMEOUT: "30"
+
+3. Using ConfigMap in Pods
+---------------------------
+a) As Environment Variables:
+    envFrom:
+    - configMapRef:
+        name: app-config
+
+b) As Specific Environment Variable:
+    env:
+    - name: MODE
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: APP_MODE
+
+c) As Command Arguments:
+    args: ["--mode=$(APP_MODE)", "--timeout=$(TIMEOUT)"]
+
+d) As a Volume (configMap type):
+    volumes:
+    - name: config-volume
+      configMap:
+        name: app-config
+
+    Mounted files:
+    /etc/config/APP_MODE -> value of APP_MODE
+    /etc/config/TIMEOUT -> value of TIMEOUT
+
+4. Handling Multi-line Values
+------------------------------
+Useful for structured configs (YAML, JSON, scripts).
+
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: multiline-config
+    data:
+      app-config.yaml: |
+        server:
+          port: 8080
+          host: 0.0.0.0
+        logging:
+          level: debug
+
+Mounted as file inside Pod:
+    cat /etc/config/app-config.yaml
+
+5. Differences: Single-line vs Multi-line
+------------------------------------------
+Single-line key:
+    APP_MODE: "production"
+- Used for env vars or CLI args
+
+Multi-line value:
+    app-config.yaml: |
+      server:
+        port: 8080
+- Used for config files, structured configs
+
+6. Summary
+-----------
+- ConfigMaps are flexible key-value stores.
+- Created via literals, files, directories, or YAML.
+- Can be used as environment variables, CLI args, or mounted volumes.
+- Single-line values for simple settings, multi-line for structured configs.
+- Not for sensitive information (use Secrets).

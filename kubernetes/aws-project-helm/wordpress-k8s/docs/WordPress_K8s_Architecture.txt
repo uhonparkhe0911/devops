@@ -1,0 +1,58 @@
+WordPress on Kubernetes: Full Architecture
+
+1) Core Components:
+- MySQL (Database):
+  - Persistent storage via PVC (AWS EBS).
+  - Deployed as StatefulSet for stable identity.
+  - Exposed via Headless Service (clusterIP: None) so WordPress can always find the right DB Pod.
+
+- WordPress (Frontend PHP app):
+  - Stateless, can scale horizontally.
+  - Deployed as Deployment with replicas.
+  - Connects to MySQL via internal Service DNS.
+  - Exposed via ClusterIP Service (internal) and Ingress for external access.
+
+2) Service Types & Why:
+- MySQL -> Headless Service (clusterIP: None):
+  - Needed for WordPress to connect to specific Pod directly.
+  - Stateful, cannot be load-balanced randomly.
+
+- WordPress -> ClusterIP Service:
+  - Provides stable internal DNS name.
+  - Load balancing handled by Ingress controller.
+  - Keeps internal traffic inside the cluster.
+
+- Ingress (with Nginx controller):
+  - Exposes WordPress to the internet via domain.
+  - Backed by AWS ELB if deployed on AWS.
+
+3) Traffic Flow:
+User -> DNS (myblog.com) -> ELB -> Ingress Controller -> ClusterIP Service (WordPress) -> WordPress Pod -> Headless Service (MySQL) -> MySQL Pod
+
+4) Requirements for Project:
+- Namespace: wordpress
+- PersistentVolumeClaims (PVCs):
+  - MySQL data (/var/lib/mysql)
+  - WordPress uploads/themes (/var/www/html) optional
+- Secrets: DB root password, WordPress DB password
+- ConfigMaps: optional environment configs
+- Deployments/StatefulSets:
+  - MySQL (StatefulSet)
+  - WordPress (Deployment)
+- Services:
+  - MySQL (Headless, clusterIP: None)
+  - WordPress (ClusterIP)
+- Ingress: domain rules for WordPress Service
+- Ingress Controller (Nginx) with LoadBalancer
+- StorageClass for dynamic EBS provisioning
+- IAM permissions (if on AWS) for EBS
+
+5) Why ClusterIP for WordPress Service:
+- Ingress forwards traffic internally, no public IP needed.
+- LoadBalancer per WordPress Service is unnecessary and costly.
+
+6) Summary:
+- MySQL -> Headless Service (clusterIP: None) for stable identity.
+- WordPress -> ClusterIP Service for internal stable name.
+- Ingress Controller -> LoadBalancer Service for external access.
+- Ingress -> routes domain traffic to WordPress Service.

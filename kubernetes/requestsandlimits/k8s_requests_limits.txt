@@ -1,0 +1,162 @@
+KUBERNETES REQUESTS AND LIMITS - COMPLETE DOCUMENTATION
+==========================================================
+
+1. Introduction
+---------------
+Kubernetes allows fine-grained control of container resources through **Requests** and **Limits**.
+
+- **Request**: The minimum amount of resource a container is guaranteed. Used by the scheduler 
+  to decide where to place a Pod.
+- **Limit**: The maximum amount of resource a container is allowed to use. Enforced at runtime 
+  by the kubelet and container runtime.
+
+These settings ensure fair sharing of resources across Pods, protect critical workloads, and 
+prevent resource starvation.
+
+----------------------------------------------------------
+
+2. Resource Types
+-----------------
+Kubernetes supports resource requests and limits for:
+- **CPU**
+  - Measured in millicores (m)
+  - 1000m = 1 CPU core
+  - Example: 500m = 0.5 core
+- **Memory**
+  - Measured in bytes, usually specified in Mi or Gi
+  - 128Mi = 134,217,728 bytes
+  - 1Gi = 1,073,741,824 bytes
+
+----------------------------------------------------------
+
+3. YAML Example with Requests and Limits
+----------------------------------------
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: resource-demo
+spec:
+  containers:
+  - name: app
+    image: nginx
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "250m"
+      limits:
+        memory: "256Mi"
+        cpu: "500m"
+```
+
+- Request: 128Mi memory and 250m CPU (guaranteed by scheduler)
+- Limit: 256Mi memory and 500m CPU (maximum allowed at runtime)
+
+----------------------------------------------------------
+
+4. How Kubernetes Uses Requests and Limits
+------------------------------------------
+- **Requests**: Scheduler uses this value to determine if a node has sufficient capacity.
+- **Limits**: Kubelet enforces this as the hard maximum during container runtime.
+
+----------------------------------------------------------
+
+5. What Happens If…?
+---------------------
+1. **Container exceeds CPU limit**
+   - Throttled by Kubernetes
+   - Container slows down but continues running
+
+2. **Container exceeds Memory limit**
+   - Process is terminated (OOMKilled)
+   - Kubernetes restarts the Pod if restart policy allows
+
+3. **Container uses more than Request but less than Limit**
+   - Allowed, if node has spare resources
+   - Burstable performance
+
+----------------------------------------------------------
+
+6. Default Behavior Without Requests/Limits
+-------------------------------------------
+- If no requests/limits are set:
+  - Requests are treated as 0
+  - Scheduler may place pod on already overloaded node
+  - Pod can consume unlimited CPU/Memory, impacting other workloads
+
+----------------------------------------------------------
+
+7. Namespace-Level Resource Management
+--------------------------------------
+Kubernetes provides **ResourceQuotas** and **LimitRanges** to enforce policies.
+
+### ResourceQuota
+Defines maximum total CPU/memory for a namespace.
+
+```yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: dev-quota
+  namespace: dev
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 2Gi
+    limits.cpu: "4"
+    limits.memory: 4Gi
+```
+
+### LimitRange
+Defines default requests and limits if not set in Pod spec.
+
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: dev
+spec:
+  limits:
+  - default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "250m"
+      memory: "256Mi"
+    type: Container
+```
+
+----------------------------------------------------------
+
+8. Best Practices
+-----------------
+- Always define requests and limits in production workloads
+- Start with requests based on observed usage metrics
+- Set limits to prevent noisy neighbors
+- Use monitoring tools (Prometheus, Grafana, Kubernetes Metrics Server)
+- For JVM-based apps, carefully tune heap vs memory limit
+- Use **LimitRanges** to ensure defaults in dev/test namespaces
+- Avoid setting limits too low (can cause frequent throttling or OOMKills)
+
+----------------------------------------------------------
+
+9. Pod QoS (Quality of Service) Classes
+---------------------------------------
+QoS classes are automatically assigned based on requests/limits:
+
+- **Guaranteed**: All containers in pod have requests = limits
+- **Burstable**: At least one container has request < limit
+- **BestEffort**: No requests/limits specified
+
+QoS impacts pod scheduling priority under resource pressure.
+
+----------------------------------------------------------
+
+10. Summary
+-----------
+- **Requests** = Minimum guaranteed resources
+- **Limits** = Maximum allowed resources
+- Requests affect scheduling, Limits affect runtime behavior
+- Essential for stable, fair, and efficient Kubernetes clusters
+

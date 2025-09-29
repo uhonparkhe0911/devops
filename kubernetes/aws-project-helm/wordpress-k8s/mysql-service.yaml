@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-mysql
+  labels:
+    app: wordpress
+spec:
+  ports:
+  - port: 3306
+    targetPort: 3306
+    protocol: TCP
+  selector:
+    app: wordpress
+    tier: mysql
+  type: ClusterIP
+  #Headless Service for Database
+  #Key Differences- 
+  #ClusterIP = single virtual IP with built-in load balancing across Pods.
+  #Headless (clusterIP: None) = no virtual IP, DNS returns Pod IPs, client chooses Pod.
+  clusterIP: None

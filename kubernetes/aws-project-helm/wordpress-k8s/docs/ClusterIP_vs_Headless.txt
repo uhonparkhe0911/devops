@@ -1,0 +1,29 @@
+Kubernetes Service: ClusterIP vs Headless (clusterIP: None)
+
+1) Normal ClusterIP Service
+- The Service gets an internal cluster IP (e.g. 10.96.0.15).
+- Traffic sent to this IP is automatically load-balanced across all matching Pods.
+- Example:
+    wordpress-service (10.96.0.15) -> Pod A, Pod B, Pod C (random distribution).
+
+2) Headless Service (clusterIP: None)
+- The Service does not get a cluster IP.
+- Instead, DNS queries return the IP addresses of all matching Pods directly.
+- Example:
+    DNS query: wordpress-mysql.default.svc.cluster.local
+    Response:
+        Pod A -> 10.244.0.12
+        Pod B -> 10.244.1.15
+- The client application decides which Pod to connect to. Kubernetes does no load balancing.
+
+Key Differences:
+- ClusterIP = single virtual IP with built-in load balancing across Pods.
+- Headless (clusterIP: None) = no virtual IP, DNS returns Pod IPs, client chooses Pod.
+
+Use Cases:
+- ClusterIP: good for stateless apps (e.g., web servers, APIs) where load balancing is required.
+- Headless: good for stateful apps (e.g., MySQL, Cassandra, Kafka) where each Pod has a unique identity and clients must connect directly.
+
+In short:
+- ClusterIP = "Give me any Pod."
+- Headless = "Tell me exactly which Pod to talk to."

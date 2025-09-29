@@ -1,0 +1,65 @@
+mysql:
+  replicaCount: 1
+  image:
+    repository: mysql
+    tag: "8.0"
+    pullPolicy: IfNotPresent
+  secret:
+    name: wordpress-mysql-secret
+    rootPasswordKey: mysql-root-password
+    databasekey: mysql-database
+    userKey: mysql-user
+    passwordKey: mysql-password
+  service:
+    port: 3306
+    name: mysql
+    protocol: TCP
+    type: ClusterIP
+  persistence:
+    enabled: true
+    mountPath: /var/lib/mysql
+    name: mysql-persistent-storage
+    claimName: mysql-pvc 
+    storageClass: default
+    accessMode: ReadWriteOnce
+    size: 1Gi
+
+wordpress:
+  replicaCount: 1
+  image:
+    repository: wordpress
+    tag: latest
+    pullPolicy: IfNotPresent
+  secret:
+    name: wordpress-mysql-secret
+    passwordKey: mysql-password
+    dbHost: wordpress-mysql
+    userKey: mysql-user
+    databasekey: mysql-database
+  service:
+    port: 80
+    name: wordpress
+    type: ClusterIP
+    protocol: TCP
+  persistence:
+    enabled: true
+    mountPath: /var/www/html
+    name: wordpress-persistent-storage
+    claimName: wordpress-pvc
+    size: 3Gi 
+    storageClass: default
+    accessMode: ReadWriteOnce
+  ingress:
+    className: nginx
+    hostName: wordpress.uhonparkhe0911.xyz
+    path: /
+    pathType: Prefix
+    enabled: true
+
+secrets:
+  create: true
+  data:
+    mysql-root-password: cm9vdHBhc3N3b3Jk      # base64("rootpassword")
+    mysql-password: d29yZHByZXNzcGFzcw==       # base64("wordpresspass")
+    mysql-database: d29yZHByZXNz               # base64("wordpress")
+    mysql-user: d29yZHByZXNz                   # base64("wordpress")

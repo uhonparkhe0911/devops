@@ -1,0 +1,33 @@
+Difference between configMapRef and configMapKeyRef in Kubernetes:
+
+1. configMapRef:
+   - Refers to an entire ConfigMap.
+   - Used to inject all keys and values from a ConfigMap as environment variables.
+   - Example:
+       envFrom:
+         - configMapRef:
+             name: game-demo
+     If game-demo contains:
+       data:
+         PLAYER_INITIAL_LIVES: "3"
+         PLAYER_START_LEVEL: "1"
+     Then inside the container:
+       PLAYER_INITIAL_LIVES=3
+       PLAYER_START_LEVEL=1
+
+2. configMapKeyRef:
+   - Refers to a specific key inside a ConfigMap.
+   - Used to inject only one value from the ConfigMap as an environment variable.
+   - Example:
+       env:
+         - name: PLAYER_INITIAL_LIVES
+           valueFrom:
+             configMapKeyRef:
+               name: game-demo
+               key: PLAYER_INITIAL_LIVES
+     Then inside the container:
+       PLAYER_INITIAL_LIVES=3
+
+Summary:
+- configMapRef → loads all keys/values as env vars.
+- configMapKeyRef → loads only one key’s value as an env var.

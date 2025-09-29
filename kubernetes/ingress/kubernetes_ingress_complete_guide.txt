@@ -1,0 +1,212 @@
+Ingress in Kubernetes – Complete Guide
+====================================================================
+
+🔹 What is Ingress?
+--------------------------------------------------------------------
+- Ingress is a Kubernetes API object that manages external HTTP/HTTPS access to services inside the cluster.
+- Provides:
+  - Path-based routing (/api, /app).
+  - Host-based routing (app.example.com).
+  - TLS termination (HTTPS).
+  - Load balancing across backend pods.
+- Needs an Ingress Controller (NGINX, Traefik, HAProxy, Istio Gateway) to function.
+
+====================================================================
+
+🔹 Types of Ingress
+--------------------------------------------------------------------
+1. **Single Service Ingress**
+   - Routes one host/path to a single service.
+
+2. **Multi-Service Ingress**
+   - Routes different paths (e.g., /api, /shop) to different services.
+
+3. **Host-Based Ingress**
+   - Routes based on hostnames (api.example.com, shop.example.com).
+
+4. **TLS Secured Ingress**
+   - Provides HTTPS via TLS secrets or cert-manager.
+
+====================================================================
+
+🔹 Ingress Controller
+--------------------------------------------------------------------
+- Ingress is only a specification. It requires a controller to implement the rules.
+- Popular Ingress Controllers:
+  - **NGINX Ingress Controller** → Most common, rich annotation support.
+  - **Traefik** → Lightweight, automatic Let's Encrypt support.
+  - **HAProxy Ingress** → High performance for enterprise workloads.
+  - **Istio Gateway** → Works with Istio service mesh for advanced traffic management.
+
+====================================================================
+
+🔹 Key Features of Ingress
+--------------------------------------------------------------------
+- **Routing** → Host and path-based routing to services.
+- **TLS Termination** → Secure HTTPS support with Kubernetes secrets or cert-manager.
+- **Load Balancing** → Distributes traffic among pods behind a service.
+- **Virtual Hosting** → Multiple domains served from one IP/LoadBalancer.
+- **Annotations** → Custom behaviors (rewrite, CORS, timeouts, rate limiting).
+
+====================================================================
+
+🛠 Step-by-Step Flow with YAML
+--------------------------------------------------------------------
+
+1️⃣ Deploy Ingress Controller
+--------------------------------------------------------------------
+Example: NGINX Ingress Controller
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+Check status:
+kubectl get pods -n ingress-nginx
+kubectl get svc -n ingress-nginx
+
+====================================================================
+
+2️⃣ Create a Deployment (App Pods)
+--------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  labels:
+    app: my-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+====================================================================
+
+3️⃣ Create a Service (Expose Deployment Internally)
+--------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app
+  ports:
+    - port: 80
+      targetPort: 80
+
+====================================================================
+
+4️⃣ Create DNS Record (CNAME or A record)
+--------------------------------------------------------------------
+- Get LoadBalancer IP/Hostname from ingress-nginx service:
+  kubectl get svc -n ingress-nginx
+
+Example:
+ingress-nginx-controller   LoadBalancer   34.120.50.10   ...
+
+- Add DNS record in your provider (Route53, Cloudflare, GoDaddy, etc.):
+  app.example.com → 34.120.50.10
+
+====================================================================
+
+5️⃣ Create Ingress Resource
+--------------------------------------------------------------------
+Basic Ingress (HTTP only)
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app-service
+            port:
+              number: 80
+
+====================================================================
+
+6️⃣ Ingress with TLS (HTTPS)
+--------------------------------------------------------------------
+First, create a TLS secret:
+kubectl create secret tls app-tls-secret --cert=app.crt --key=app.key
+
+Ingress with TLS:
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app-ingress
+spec:
+  tls:
+  - hosts:
+    - app.example.com
+    secretName: app-tls-secret
+  rules:
+  - host: app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app-service
+            port:
+              number: 80
+
+====================================================================
+
+🔁 Flow Recap
+--------------------------------------------------------------------
+1. Ingress Controller (NGINX/Traefik/Istio) → Entry point.
+2. Deployment → Pods running app.
+3. Service → Exposes pods internally (ClusterIP).
+4. DNS Record → Points domain to LoadBalancer external IP.
+5. Ingress Resource → Routes external traffic (host/path) → Service → Pods.
+
+====================================================================
+
+✨ Ingress vs Service Mesh (Istio)
+--------------------------------------------------------------------
+- **Ingress**:
+  - Basic traffic routing (HTTP/HTTPS).
+  - Simple TLS termination.
+  - Lightweight, fewer features.
+
+- **Istio Gateway (Service Mesh)**:
+  - Advanced L7 traffic management (canary, A/B testing, fault injection).
+  - Mutual TLS (mTLS) between services.
+  - Traffic mirroring and retries.
+  - Strong observability (metrics, tracing, logging).
+
+👉 Ingress = entry-level external routing.  
+👉 Service Mesh (Istio) = full internal + external service communication management.
+
+====================================================================
+
+✨ Extensions
+--------------------------------------------------------------------
+- Annotations: nginx.ingress.kubernetes.io/ssl-redirect, proxy-body-size, CORS, etc.
+- Cert-manager: automates TLS with Let’s Encrypt.
+- Multi-path routing (/api → backend1, /shop → backend2).
+- Multi-host ingress (api.example.com, shop.example.com).
+
+====================================================================

@@ -1,0 +1,156 @@
+KUBERNETES DAEMONSET - COMPLETE DOCUMENTATION
+==========================================================
+
+1. Introduction
+---------------
+A **DaemonSet** in Kubernetes ensures that a copy of a Pod runs on **every Node** (or on a subset of Nodes)
+in a cluster. As nodes are added to the cluster, the DaemonSet automatically adds the Pod to them. 
+When nodes are removed, the DaemonSet automatically removes the corresponding Pods.
+
+If a DaemonSet is deleted, Kubernetes removes all the Pods it created.
+
+----------------------------------------------------------
+
+2. Why is DaemonSet Required?
+-----------------------------
+DaemonSets solve the problem of running workloads that must exist **on all nodes** or on a specific group of nodes.
+
+Key Use Cases:
+1. **Cluster Monitoring**
+   - Tools like Prometheus Node Exporter, Datadog Agent, or New Relic must run on each node to gather metrics.
+
+2. **Log Collection**
+   - Tools like Fluentd, Logstash, or Filebeat must run on every node to collect logs from containers and system files.
+
+3. **Networking**
+   - CNI plugins (Calico, Flannel, Weave Net) use DaemonSets to install network components on each node.
+
+4. **Storage**
+   - Storage daemons (Ceph, GlusterFS, Portworx) require Pods on each node to manage volumes.
+
+5. **Security and Maintenance**
+   - Tools like Falco (security monitoring), Node Problem Detector, or antivirus agents are deployed as DaemonSets.
+
+Without DaemonSets, operators would have to manually run and maintain these agents on every node, which is not scalable.
+
+----------------------------------------------------------
+
+3. DaemonSet Example YAML
+-------------------------
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-monitor
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: node-monitor
+  template:
+    metadata:
+      labels:
+        app: node-monitor
+    spec:
+      containers:
+      - name: node-exporter
+        image: prom/node-exporter:latest
+        ports:
+        - containerPort: 9100
+```
+
+- This example runs **node-exporter** on every node to expose system metrics for monitoring.
+
+----------------------------------------------------------
+
+4. How DaemonSets Work
+----------------------
+- A DaemonSet controller ensures the desired Pods are scheduled across nodes.
+- Scheduler interaction:
+  - Originally DaemonSet Pods bypassed the scheduler.
+  - Since Kubernetes v1.12, Pods are scheduled via the default scheduler for better integration with features like affinity/anti-affinity and taints/tolerations.
+
+----------------------------------------------------------
+
+5. Differences from Other Controllers
+-------------------------------------
+| Controller   | Purpose                                             | Runs on All Nodes? | Example Use Case            |
+|--------------|-----------------------------------------------------|--------------------|-----------------------------|
+| **Deployment** | Runs replicas of Pods for scalable apps            | ❌ No               | Web servers, APIs           |
+| **StatefulSet** | Runs Pods with stable identity & storage           | ❌ No               | Databases, Kafka, Zookeeper |
+| **DaemonSet**  | Ensures Pods run on every (or selected) node       | ✅ Yes              | Monitoring, logging agents  |
+
+----------------------------------------------------------
+
+6. Node Selection for DaemonSets
+--------------------------------
+By default, DaemonSets run on **all nodes**, but you can restrict them using:
+
+### Node Selector Example
+```yaml
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+```
+
+### Tolerations Example
+```yaml
+spec:
+  template:
+    spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
+```
+
+This allows DaemonSet Pods to run on master nodes as well.
+
+### Node Affinity Example
+```yaml
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: disktype
+                operator: In
+                values:
+                - ssd
+```
+
+----------------------------------------------------------
+
+7. Benefits of DaemonSets
+--------------------------
+- Automatic deployment to all or selected nodes.
+- Guarantees cluster-wide availability of essential agents.
+- Reduces manual overhead for node-level services.
+- Integrates with node labels, taints, tolerations, and affinity rules.
+
+----------------------------------------------------------
+
+8. Real-World Examples
+----------------------
+- **Fluentd/Filebeat** → Collect logs from all nodes.
+- **Prometheus Node Exporter** → Collect system metrics.
+- **Calico/Flannel** → Provide networking across nodes.
+- **Falco** → Security runtime monitoring.
+- **Node Problem Detector** → Detect and report node issues.
+
+----------------------------------------------------------
+
+9. Summary
+----------
+- A DaemonSet ensures that a Pod runs on all or selected nodes.
+- Required for tasks like monitoring, logging, networking, storage, and security.
+- Simplifies node-wide service management.
+- Works seamlessly with Kubernetes scheduling features for fine-grained control.
+
+DaemonSets are essential for cluster-wide consistency and automation in DevOps environments.
+

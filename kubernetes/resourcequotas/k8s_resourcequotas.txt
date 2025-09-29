@@ -1,0 +1,112 @@
+KUBERNETES RESOURCEQUOTA - COMPLETE DOCUMENTATION
+=================================================
+
+1. INTRODUCTION
+---------------
+A ResourceQuota is a Kubernetes object that sets constraints on resource usage within a namespace.
+It ensures that no single team, workload, or user can consume excessive cluster resources.
+
+Think of it as a "resource budget" for a namespace.
+
+---
+
+2. WHY RESOURCEQUOTA IS REQUIRED
+--------------------------------
+- Multi-Tenancy: Ensures fair distribution of resources across teams/projects in a shared cluster.
+- Prevents Resource Starvation: Stops one workload from consuming all CPU/Memory, affecting others.
+- Cost & Stability Control: Prevents runaway workloads from increasing costs or destabilizing apps.
+- Governance & Compliance: Helps organizations enforce resource policies for teams.
+
+---
+
+3. RESOURCEQUOTA YAML EXAMPLES
+------------------------------
+
+Basic Quota Example:
+--------------------
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: dev-quota
+  namespace: dev
+spec:
+  hard:
+    requests.cpu: "2"        # Max 2 CPUs requested
+    requests.memory: 2Gi     # Max 2Gi memory requested
+    limits.cpu: "4"          # Max 4 CPUs allowed
+    limits.memory: 4Gi       # Max 4Gi memory allowed
+    pods: "10"               # Max 10 Pods in this namespace
+    persistentvolumeclaims: "5"
+    services: "5"
+    configmaps: "10"
+
+---
+
+ResourceQuota with Scopes Example:
+----------------------------------
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: besteffort-quota
+  namespace: dev
+spec:
+  hard:
+    pods: "5"
+  scopes:
+  - BestEffort
+
+Explanation:
+- This quota only applies to BestEffort Pods (Pods with no requests/limits defined).
+- Forces developers to set requests/limits for their workloads.
+
+---
+
+4. RESOURCEQUOTA WITH LIMITRANGE
+---------------------------------
+- ResourceQuota controls total namespace resource consumption.
+- LimitRange controls per-pod/container resource defaults and max/min values.
+
+Example Use Case:
+- ResourceQuota: "Namespace can use up to 4 CPUs".
+- LimitRange: "Each Pod must request between 100m and 500m CPU".
+- Together: Prevents both overuse and under-requesting of resources.
+
+---
+
+5. WHAT HAPPENS IF QUOTA IS EXCEEDED?
+-------------------------------------
+- Kubernetes rejects the request with a `Forbidden` error.
+- Example: If Pod count exceeds the max quota, creation fails until resources are freed.
+- Users must delete existing workloads or administrators must adjust the quota.
+
+---
+
+6. BEST PRACTICES
+-----------------
+- Always define quotas in multi-tenant clusters.
+- Pair with LimitRange to enforce per-Pod defaults.
+- Regularly monitor quotas:
+  kubectl describe quota dev-quota -n dev
+- Avoid setting quotas too low → may block deployments.
+- Do not apply quotas on critical namespaces (e.g., kube-system).
+
+---
+
+7. REAL-WORLD USE CASES
+-----------------------
+- Development Namespace: Restrict to 10 Pods, 2 CPUs, 4Gi RAM → prevents overuse by dev workloads.
+- CI/CD Namespace: Restrict ephemeral Pods used in pipelines → ensures jobs don’t overload cluster.
+- Production Namespace: Higher quota limits, guaranteeing resources for critical apps.
+- Staging/Testing: Enforce strict quotas to mimic production-like behavior but with fewer resources.
+
+---
+
+8. SUMMARY
+----------
+- ResourceQuota is essential for managing shared cluster environments.
+- Ensures fairness, cost control, and stability.
+- Works best with LimitRanges for fine-grained control.
+- Essential in DevOps workflows where multiple teams share the same Kubernetes cluster.
+
+=================================================
+END OF DOCUMENT
