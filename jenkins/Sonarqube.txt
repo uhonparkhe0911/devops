@@ -1,0 +1,211 @@
+=============================
+        SONARQUBE
+=============================
+
+1. INTRODUCTION
+---------------
+SonarQube is an open-source platform developed by SonarSource for continuous inspection of code quality.  
+It helps detect bugs, vulnerabilities, code smells, and code duplication across multiple programming languages.  
+
+SonarQube is widely integrated into DevOps pipelines to ensure clean, maintainable, and secure code before it moves into production.
+
+---
+
+2. KEY FEATURES
+---------------
+- Static code analysis (without running the code).
+- Multi-language support (Java, Python, JavaScript, C#, Go, PHP, etc.).
+- Quality Gates to enforce standards (e.g., coverage > 80%, no blocker issues).
+- Security scanning (OWASP Top 10).
+- Integration with CI/CD tools (Jenkins, GitHub Actions, GitLab CI, Azure DevOps).
+- Reports and dashboards for visibility into code health.
+- Technical debt calculation (time/effort required to fix issues).
+- Duplication detection.
+
+---
+
+3. WHY USE SONARQUBE IN DEVOPS
+-------------------------------
+- Enforces coding standards across teams.
+- Improves maintainability and reduces technical debt.
+- Detects security issues early in the pipeline.
+- Ensures high-quality code reaches production.
+- Provides visibility into project health for developers and managers.
+
+---
+
+4. SONARQUBE ARCHITECTURE
+--------------------------
+1. SonarQube Server
+   - Web application for code analysis reports.
+   - Provides dashboards and configuration.
+
+2. Database
+   - Stores analysis reports, user data, history, and project configurations.
+   - Commonly uses PostgreSQL.
+
+3. SonarQube Scanner
+   - CLI or plugin that runs analysis on code and sends results to the server.
+
+4. Plugins
+   - Extensions for CI/CD tools, IDEs, and additional language analyzers.
+
+---
+
+5. INSTALLATION OVERVIEW
+-------------------------
+Option 1: Using Docker
+----------------------
+docker run -d --name sonarqube \
+  -p 9000:9000 \
+  sonarqube:latest
+
+Access at: http://localhost:9000  
+(Default login: admin / admin)
+
+Option 2: Manual on Ubuntu
+--------------------------
+1. Install Java 11 or later.
+2. Install PostgreSQL and create database/user for SonarQube.
+3. Download SonarQube from official website.
+4. Configure sonar.properties with DB details.
+5. Start SonarQube service and access via browser.
+
+---
+
+6. SONARQUBE IN CI/CD PIPELINE
+-------------------------------
+Typical Workflow:
+1. Developer pushes code to Git.
+2. CI/CD pipeline runs build + tests.
+3. SonarQube Scanner analyzes the code.
+4. Results are sent to SonarQube Server.
+5. Quality Gate decides pass/fail.
+6. If Quality Gate fails, pipeline aborts.
+
+---
+
+7. JENKINS INTEGRATION EXAMPLE (Java/Maven)
+-------------------------------------------
+stage('SonarQube Analysis') {
+    steps {
+        script {
+            withSonarQubeEnv('SonarQubeServer') {
+                sh 'mvn clean verify sonar:sonar'
+            }
+        }
+    }
+}
+
+---
+
+8. PYTHON PROJECT EXAMPLE
+--------------------------
+Python codebases can also be analyzed with SonarQube to check for:
+- Bugs
+- Code Smells
+- Security Vulnerabilities
+- Code Duplication
+- Coverage Reports (with pytest)
+
+Step 1: Install SonarQube Scanner CLI
+-------------------------------------
+wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+unzip sonar-scanner-cli-*.zip -d /opt/
+export PATH=$PATH:/opt/sonar-scanner-*/bin
+
+Step 2: Add sonar-project.properties to Project Root
+----------------------------------------------------
+sonar.projectKey=python-demo
+sonar.projectName=Python Demo App
+sonar.projectVersion=1.0
+sonar.sources=.
+sonar.exclusions=**/tests/**
+sonar.language=py
+sonar.python.coverage.reportPaths=coverage.xml
+
+Step 3: Jenkins Declarative Pipeline Example
+--------------------------------------------
+pipeline {
+    agent any
+
+    tools {
+        python 'Python3'
+    }
+
+    stages {
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                python -m venv venv
+                source venv/bin/activate
+                pip install -r requirements.txt
+                pip install pytest pytest-cov
+                '''
+            }
+        }
+
+        stage('Run Tests with Coverage') {
+            steps {
+                sh '''
+                source venv/bin/activate
+                pytest --cov=./ --cov-report=xml
+                '''
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv('SonarQubeServer') {
+                        sh '''
+                        sonar-scanner \
+                          -Dsonar.projectKey=python-demo \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=http://<SONARQUBE_SERVER>:9000 \
+                          -Dsonar.login=$SONARQUBE_TOKEN
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+}
+
+---
+
+9. WHAT THIS PIPELINE DOES
+---------------------------
+1. Installs dependencies in virtual environment.
+2. Runs pytest with coverage and generates coverage.xml.
+3. Executes SonarQube Scanner for static analysis.
+4. Sends data (bugs, smells, duplication, coverage) to SonarQube.
+5. Enforces Quality Gate rules:
+   - Code duplication threshold.
+   - Coverage threshold.
+   - Blocker issues must be 0.
+   - Build fails if Quality Gate fails.
+
+---
+
+10. SONARQUBE VS SONARCLOUD
+----------------------------
+- SonarQube: Self-hosted (install on server/VM).
+- SonarCloud: Cloud SaaS managed by SonarSource (no infra required).
+
+---
+
+SUMMARY
+-------
+SonarQube is a critical tool in DevOps pipelines for maintaining code quality, security, and maintainability.  
+For Python projects, integration with pytest + coverage ensures duplication checks, code smells detection, and coverage enforcement.  
+With Jenkins (or other CI/CD tools), Quality Gates prevent bad code from reaching production, saving time and reducing technical debt.
+

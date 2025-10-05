@@ -1,0 +1,155 @@
+JENKINS PIPELINE — COMPLETE GUIDE
+=================================================
+
+Overview:
+----------
+A Jenkins Pipeline is a set of instructions (as code) that defines how Jenkins will build, test, and deploy your project. Pipelines are defined in a Jenkinsfile stored in your project repository.
+
+Benefits:
+- Version-controlled build process
+- Reproducible CI/CD workflows
+- Easy integration with SCM, Docker, Maven, and other tools
+- Supports complex workflows including parallel stages, conditional steps, and approvals
+
+Types of Jenkins Pipelines:
+---------------------------
+1. Declarative Pipeline - Simplified, structured syntax, recommended for most use cases
+2. Scripted Pipeline - Full Groovy syntax, flexible for complex logic
+
+------------------------------------------------------
+TRIGGERS IN JENKINS PIPELINE
+------------------------------------------------------
+Triggers are conditions that automatically start a pipeline build.
+
+Common triggers:
+
+1️⃣ SCM Polling
+- Jenkins checks the source code repository for changes at scheduled intervals.
+Example: Check Git every 5 minutes
+triggers {
+    pollSCM('H/5 * * * *')
+}
+
+2️⃣ Webhooks / Git Push
+- Repository sends a POST request to Jenkins when code is pushed.
+- Preferred over polling.
+
+3️⃣ Scheduled Builds
+- Run pipeline on a schedule using cron syntax.
+triggers {
+    cron('H 2 * * 1-5') // Runs at 2 AM Mon-Fri
+}
+
+4️⃣ Upstream/Downstream Jobs
+- Trigger pipeline when another Jenkins job completes successfully.
+triggers {
+    upstream(upstreamProjects: 'Job-A', threshold: hudson.model.Result.SUCCESS)
+}
+
+5️⃣ Manual Trigger (Input)
+- Pipeline waits for manual approval before continuing.
+stage('Deploy to Production') {
+    steps {
+        input "Approve deployment?"
+        sh './deploy.sh'
+    }
+}
+
+------------------------------------------------------
+BASIC JENKINS PIPELINE EXAMPLE
+------------------------------------------------------
+Declarative Pipeline:
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = 'MyApp'
+        DOCKER_IMAGE = 'myapp:latest'
+    }
+
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/example/myapp.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE .'
+                sh 'docker run -d -p 8080:8080 $DOCKER_IMAGE'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished.'
+        }
+        success {
+            echo 'Build succeeded!'
+        }
+        failure {
+            echo 'Build failed!'
+        }
+    }
+}
+
+Scripted Pipeline:
+node {
+    stage('Checkout') {
+        git 'https://github.com/example/myapp.git'
+    }
+    stage('Build') {
+        sh 'mvn clean install'
+    }
+    stage('Test') {
+        sh 'mvn test'
+    }
+    stage('Deploy') {
+        sh 'docker build -t myapp:latest .'
+        sh 'docker run -d -p 8080:8080 myapp:latest'
+    }
+    stage('Post Actions') {
+        echo 'Pipeline completed.'
+    }
+}
+
+------------------------------------------------------
+STEPS TO CREATE A BASIC PIPELINE
+------------------------------------------------------
+1. Create a new Pipeline job in Jenkins
+2. Configure the pipeline (from SCM or inline script)
+3. Add Jenkinsfile to your repo with stages: checkout, build, test, deploy
+4. Configure triggers (optional)
+5. Save and Build Now
+
+------------------------------------------------------
+BEST PRACTICES
+------------------------------------------------------
+- Keep Jenkinsfile version-controlled
+- Use Declarative Pipeline for simplicity
+- Use Shared Libraries for reusable steps
+- Separate build, test, and deploy stages clearly
+- Use environment variables instead of hardcoding values
+- Use proper triggers (prefer webhooks over SCM polling)
+
+------------------------------------------------------
+End of Document
+------------------------------------------------------

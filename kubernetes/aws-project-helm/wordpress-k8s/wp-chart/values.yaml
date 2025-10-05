@@ -4,12 +4,6 @@ mysql:
     repository: mysql
     tag: "8.0"
     pullPolicy: IfNotPresent
-  secret:
-    name: wordpress-mysql-secret
-    rootPasswordKey: mysql-root-password
-    databasekey: mysql-database
-    userKey: mysql-user
-    passwordKey: mysql-password
   service:
     port: 3306
     name: mysql
@@ -19,8 +13,8 @@ mysql:
     enabled: true
     mountPath: /var/lib/mysql
     name: mysql-persistent-storage
-    claimName: mysql-pvc 
-    storageClass: default
+    claimName: mysql-pvc
+    storageClass: ""
     accessMode: ReadWriteOnce
     size: 1Gi
 
@@ -28,14 +22,8 @@ wordpress:
   replicaCount: 1
   image:
     repository: wordpress
-    tag: latest
+    tag: "6.4.2"
     pullPolicy: IfNotPresent
-  secret:
-    name: wordpress-mysql-secret
-    passwordKey: mysql-password
-    dbHost: wordpress-mysql
-    userKey: mysql-user
-    databasekey: mysql-database
   service:
     port: 80
     name: wordpress
@@ -46,20 +34,26 @@ wordpress:
     mountPath: /var/www/html
     name: wordpress-persistent-storage
     claimName: wordpress-pvc
-    size: 3Gi 
-    storageClass: default
+    size: 3Gi
+    storageClass: ""
     accessMode: ReadWriteOnce
   ingress:
+    enabled: true
     className: nginx
-    hostName: wordpress.uhonparkhe0911.xyz
+    hostName: wordpress.example.com
     path: /
     pathType: Prefix
-    enabled: true
 
-secrets:
+secret:
+  name: wordpress-mysql-secret
   create: true
   data:
-    mysql-root-password: cm9vdHBhc3N3b3Jk      # base64("rootpassword")
-    mysql-password: d29yZHByZXNzcGFzcw==       # base64("wordpresspass")
-    mysql-database: d29yZHByZXNz               # base64("wordpress")
-    mysql-user: d29yZHByZXNz                   # base64("wordpress")
+    mysqlRootPassword: cm9vdHBhc3N3b3Jk      # base64("rootpassword")
+    mysqlPassword: d29yZHByZXNzcGFzcw==       # base64("wordpresspass")
+    mysqlDatabase: d29yZHByZXNz               # base64("wordpress")
+    mysqlUser: d29yZHByZXNz                   # base64("wordpress")
+
+database:
+  host: mysql
+  name: wordpress
+  user: wordpress

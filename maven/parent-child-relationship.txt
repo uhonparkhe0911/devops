@@ -1,0 +1,238 @@
+PARENT-CHILD RELATIONSHIP IN MAVEN
+====================================
+
+Overview:
+----------
+Maven supports **inheritance and aggregation**, allowing you to manage multiple related projects efficiently.
+
+- **Parent POM:** A central pom.xml that defines common configuration, dependencies, plugins, and properties.
+- **Child POM(s):** Individual module projects that inherit and extend the parent’s configuration.
+
+This structure ensures consistency across all modules and reduces redundancy.
+
+------------------------------------------------------
+Parent POM (Definition)
+------------------------------------------------------
+A parent POM:
+- Is defined with `<packaging>pom</packaging>`
+- Contains `<modules>` section listing all child projects
+- Typically resides at the root of the project structure
+
+Example — **Parent pom.xml**
+------------------------------------------------------
+<project>
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.example</groupId>
+  <artifactId>parent-project</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>service-a</module>
+    <module>service-b</module>
+  </modules>
+
+  <properties>
+    <java.version>17</java.version>
+    <spring.boot.version>3.2.0</spring.boot.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        <version>${spring.boot.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.10.1</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
+
+------------------------------------------------------
+Child POM (Definition)
+------------------------------------------------------
+Each child module has its own pom.xml and includes a `<parent>` section to link back to the parent.
+
+Example — **Child (service-a/pom.xml)**
+------------------------------------------------------
+<project>
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>parent-project</artifactId>
+    <version>1.0.0</version>
+    <relativePath>../pom.xml</relativePath> <!-- optional if structure is standard -->
+  </parent>
+
+  <artifactId>service-a</artifactId>
+
+  <dependencies>
+    <!-- Inherit dependency versions from parent -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Inherit plugin configurations from parent -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+
+------------------------------------------------------
+Inheritance in Maven:
+------------------------------------------------------
+Maven uses **inheritance** to share configurations between parent and child projects.
+
+What can be inherited:
+✅ Properties  
+✅ Dependency Management  
+✅ Plugin Management  
+✅ Repositories  
+✅ Reporting and distribution configuration  
+✅ Build configurations
+
+What is NOT inherited:
+❌ Dependencies declared outside <dependencyManagement>  
+❌ Modules section  
+❌ SCM or issueManagement elements (must be redefined if needed)
+
+------------------------------------------------------
+Dependency Management in Parent → Child
+------------------------------------------------------
+Parent defines dependencies with versions in `<dependencyManagement>`.
+
+Example:
+Parent:
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.3.0</version>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
+Child:
+<dependencies>
+  <dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <!-- Version is inherited from parent -->
+  </dependency>
+</dependencies>
+
+Result:
+- Child uses same version as defined in parent.
+- You can override version in child if needed.
+
+------------------------------------------------------
+Plugin Management in Parent → Child
+------------------------------------------------------
+Parent defines plugin configuration in `<pluginManagement>`.
+Child just references the plugin, and inherits configuration automatically.
+
+Example:
+Parent:
+<build>
+  <pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.1</version>
+        <configuration>
+          <source>17</source>
+          <target>17</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </pluginManagement>
+</build>
+
+Child:
+<build>
+  <plugins>
+    <plugin>
+      <artifactId>maven-compiler-plugin</artifactId>
+    </plugin>
+  </plugins>
+</build>
+
+------------------------------------------------------
+Calling Parent “Functions” in Child
+------------------------------------------------------
+In Maven, “functions” = reusable configuration (dependencies, plugins, properties).
+
+You don’t *call* them programmatically, but you *inherit or reference* them:
+- By declaring `<parent>` in the child’s pom.xml
+- By using `${propertyName}` for properties defined in the parent
+- By referencing dependency versions managed in parent’s `<dependencyManagement>`
+- By reusing plugin configurations via `<pluginManagement>`
+
+Example:
+Parent:
+<properties>
+  <java.version>17</java.version>
+</properties>
+
+Child:
+<build>
+  <plugins>
+    <plugin>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <configuration>
+        <source>${java.version}</source>
+        <target>${java.version}</target>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+
+------------------------------------------------------
+Multi-Module Project Build:
+------------------------------------------------------
+If the parent includes modules:
+- Running `mvn clean install` at the parent level automatically builds all child modules in correct order.
+
+Example:
+$ mvn clean install
+→ Builds parent, then service-a, then service-b
+
+------------------------------------------------------
+Benefits of Parent-Child Relationship:
+------------------------------------------------------
+✅ Centralized management of versions and plugins  
+✅ Consistent build environment  
+✅ Easier dependency and plugin updates  
+✅ Reduces redundancy  
+✅ Simplifies CI/CD pipeline maintenance  
+✅ Easier modular project management  
+
+------------------------------------------------------
+End of Document
+------------------------------------------------------

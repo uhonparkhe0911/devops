@@ -1,0 +1,456 @@
+
+Amazon EKS — Complete Guide and Terraform Setup
+
+Detailed, practical guide to Amazon Elastic Kubernetes Service (EKS), architecture, best practices, and a full Terraform-based cluster setup (with examples and post-deploy steps).
+
+---
+
+Table of contents
+
+1. Quick summary — what this guide covers
+2. What is Amazon EKS? (high level)
+3. EKS architecture & core components
+4. Node types and compute options
+5. Networking: VPC, subnets, CNI, IPs, load balancers
+6. Identity & security (IAM, IRSA, RBAC)
+7. Storage & persistent volumes
+8. Observability, logging & monitoring
+9. Autoscaling & cost controls
+10. Production hardening & best practices checklist
+11. Prerequisites (accounts, CLI tools, IAM permissions)
+12. Step-by-step: quick 'eksctl' cluster creation (manual/fast)
+13. Terraform approach — design choices, state backend
+14. Example Terraform (VPC + EKS module + node groups) — full sample
+15. Post-deploy: kubeconfig, Helm charts, AWS Load Balancer Controller, IRSA, metrics
+16. Common problems & troubleshooting tips
+17. Cost considerations
+18. Cleaning up
+19. Appendix: useful commands & reference snippets
+
+---
+
+1 — Quick summary
+
+This guide explains what EKS is, its core building blocks, and a pragmatic, reproducible way to provision EKS with Terraform (including networking, IAM, nodegroups, and essential post-deploy pieces). It includes code examples you can copy, variables to customize, and a production checklist.
+
+> Note: this document focuses on infrastructure and cluster provisioning. You'll still need to install and manage applications, Helm charts, and CI/CD pipelines on top of the cluster.
+
+---
+
+2 — What is Amazon EKS?
+
+Amazon Elastic Kubernetes Service (EKS) is AWS's managed Kubernetes control plane. AWS runs and patches the control plane nodes (API servers, etcd, controller manager) for you, while you manage worker compute (EC2 node groups or Fargate). EKS is upstream Kubernetes conformant, integrates with AWS services (IAM, CloudWatch, ALB/NLB, Auto Scaling), and supports add-ons such as the AWS VPC CNI, kube-proxy, CoreDNS, and the AWS Load Balancer Controller.
+
+---
+
+3 — EKS architecture & core components
+
+- **Control plane (managed by AWS):** High-availability API servers, etcd, controller manager. You don't manage these EC2s directly.
+- **Worker nodes:** EC2 instances (self-managed or managed node groups) or Fargate for serverless pods.
+- **Node groups:** Collections of nodes. Two main types:
+  - *Managed Node Groups* (AWS-managed lifecycle, easier updates)
+  - *Self-managed Node Groups* (you create ASG / EC2 instances yourself)
+- **Addons:** AWS-provided Kubernetes components (VPC CNI, CoreDNS, kube-proxy) and optional controllers (AWS Load Balancer Controller, Cluster Autoscaler, Metrics Server)
+- **Networking/ENIs:** EKS uses the AWS VPC CNI by default; pods receive IPs from VPC subnets via ENIs and secondary IPs. Pod density limited by instance ENI/IP limits unless using CNI enhancements.
+
+---
+
+4 — Node types and compute options
+
+- **EC2 with Managed Node Groups**: easiest for production; AWS handles lifecycle.
+- **Self-managed EC2 Node Groups**: more control; you must manage upgrades and lifecycle.
+- **Fargate**: serverless for pods — you don't manage EC2 instances; good for small, bursty, or specific workloads.
+- **Bottlerocket / Bottlerocket + managed node groups**: OS optimized for containers.
+- **Spot Instances**: lower cost but transient; good for stateless workloads.
+
+---
+
+5 — Networking: VPC, subnets, CNI, IPs, load balancers
+
+- **VPC design:** Use multiple private subnets across AZs for nodes and private subnets for internal workloads; public subnets for NAT, bastion, or public ALBs if needed.
+- **Subnets:** EKS requires at least two subnets in different AZs for HA (3 AZs recommended).
+- **CNI plugin:** AWS VPC CNI allocates secondary IPs to pods. Consider `amazon-vpc-cni` configuration for prefix delegation, custom networking, or use other CNIs if needed.
+- **Load balancers:** Use the AWS Load Balancer Controller (ALB) for L7 routing and the NLB for L4 or TCP. In Terraform, install the controller via Helm with appropriate IAM permissions.
+- **Security groups:** Control plane has security group permissions and worker node SGs must allow kubelet/API server communication and node-to-node pod traffic.
+
+---
+
+6 — Identity & security (IAM, IRSA, RBAC)
+
+- **IAM for cluster control plane:** EKS control plane uses IAM for API auth; AWS IAM users/roles with `eks:*` or specific permissions can manage cluster ops.
+- **Worker node IAM:** Nodes need roles for reading S3, pulling images, etc. With managed nodegroups you specify an instance role.
+- **IRSA (IAM Roles for Service Accounts):** Recommended best practice. It allows Kubernetes ServiceAccounts to assume IAM roles using OIDC provider — avoids mapping broad node IAM permissions to pods.
+- **RBAC:** Use Kubernetes RBAC for in-cluster permissions and bind specific permissions to service accounts.
+- **Secrets encryption:** Consider using AWS KMS for envelope encryption of Kubernetes secrets.
+- **Private clusters:** EKS supports private control plane endpoints, recommended for higher security.
+
+---
+
+7 — Storage & persistent volumes
+
+- **EBS:** Block storage for single-AZ pods; common for databases.
+- **EFS (Elastic File System):** Network file system suitable for multi-AZ shared storage.
+- **FSx for Lustre / FSx for NetApp ONTAP / FSx for Windows:** For specialized workloads.
+- **S3:** For object storage — use S3 APIs from applications or gateways like MinIO.
+- **StorageClasses & dynamic provisioning:** Install AWS EBS CSI driver for dynamic PV creation.
+
+---
+
+8 — Observability, logging & monitoring
+
+- **CloudWatch Container Insights:** collect metrics and logs.
+- **CloudWatch Logs:** Send control-plane and worker logs (audit, auth, api, scheduler). EKS allows enabling control-plane logging.
+- **Prometheus + Grafana:** Common open-source stack for metrics. Use Prometheus Operator/Helm charts and EKS-optimized scraping.
+- **X-Ray / OpenTelemetry:** Distributed tracing
+
+---
+
+9 — Autoscaling & cost controls
+
+- **Cluster Autoscaler:** Adjusts node counts based on pod demands (works with AutoScaling Groups and managed node groups).
+- **Karpenter:** AWS's flexible autoscaler for fast provisioning and packing across instance types and AZs.
+- **Managed Node Group scaling:** Use `desired_size/min/max`.
+- **Spot + On-demand mix:** Use node taints/labels to schedule tolerant workloads on spot.
+
+---
+
+10 — Production hardening & best practices checklist
+
+- Use multiple AZs and private subnets.
+- Use managed node groups for easier lifecycle management.
+- Use IRSA for least-privilege permissions.
+- Use private control plane endpoints where possible.
+- Enable control-plane logging and Container Insights.
+- Use PodDisruptionBudgets, readiness/liveness probes, resource requests/limits.
+- Regularly patch node AMIs and Kubernetes versions (test upgrades in staging).
+- Use network policies to restrict pod-to-pod traffic.
+- Use encryption at rest (KMS) and TLS for in-transit.
+
+---
+
+11 — Prerequisites (before provisioning)
+
+- AWS account with sufficient quotas (EC2, ENIs, EBS). Check ENI/IP limits per instance type.
+- IAM user or role with administrator or targeted EKS permissions.
+- Local tools: `aws` CLI configured, `kubectl`, `eksctl` (optional), `terraform` (v1.x recommended), `helm` (for charts).
+- S3 bucket + DynamoDB table for Terraform remote state locking (recommended).
+
+---
+
+12 — Quick: create a cluster with `eksctl` (fast path)
+
+```bash
+# Simple single command (small test cluster)
+eksctl create cluster \
+  --name demo-eks \
+  --region us-east-1 \
+  --nodegroup-name demo-nodes \
+  --node-type t3.medium \
+  --nodes 3 \
+  --nodes-min 2 \
+  --nodes-max 5 \
+  --managed
+
+# After creation, configure kubectl
+aws eks --region us-east-1 update-kubeconfig --name demo-eks
+kubectl get nodes
+```
+
+This is a great way to get started, but for production teams we prefer Terraform for repeatability and state management.
+
+---
+
+13 — Terraform approach — design choices
+
+Key design choices:
+- **Remote state:** S3 backend with DynamoDB for locking.
+- **Module vs handcrafted resources:** Use `terraform-aws-modules/eks/aws` module to save time and follow common patterns. For full control you can use low-level `aws_eks_cluster`, `aws_eks_node_group`, etc.
+- **Separation of concerns:** Create VPC in a separate Terraform module/project (or import an existing VPC). Keep EKS oriented code focused on cluster resources and nodegroups.
+- **Provisioning order:** VPC -> IAM OIDC -> EKS cluster -> Node groups -> add-ons (helm charts) -> workloads.
+
+---
+
+14 — Example Terraform (VPC + EKS module + managed node groups)
+
+Below is a working example you can adapt. It uses the `terraform-aws-modules/eks/aws` module (community-maintained and widely used). Adjust versions and variables.
+
+Files included in example: `backend.tf`, `providers.tf`, `variables.tf`, `main.tf`, `outputs.tf`.
+
+### backend.tf
+
+```hcl
+terraform {
+  required_version = ">= 1.0"
+  backend "s3" {
+    bucket         = "my-terraform-state-bucket"
+    key            = "eks/cluster.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-locks"
+    encrypt        = true
+  }
+}
+```
+
+### providers.tf
+
+```hcl
+provider "aws" {
+  region = var.region
+}
+
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
+}
+
+data "aws_eks_cluster" "cluster" {
+  name = module.eks.cluster_id
+}
+
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_id
+}
+```
+
+> Note: some module versions provide an output `kubeconfig` or helper outputs to set up the Kubernetes provider. Follow the module docs for exact outputs.
+
+### variables.tf
+
+```hcl
+variable "region" {
+  type    = string
+  default = "us-east-1"
+}
+
+variable "cluster_name" {
+  type    = string
+  default = "demo-eks"
+}
+
+variable "vpc_id" {
+  type    = string
+  default = "" # optionally pass existing VPC
+}
+
+variable "subnets" {
+  type    = list(string)
+  default = []
+}
+```
+
+### main.tf (simplified)
+
+```hcl
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 4.0"
+
+  name = "eks-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = ["us-east-1a","us-east-1b","us-east-1c"]
+  private_subnets = ["10.0.1.0/24","10.0.2.0/24","10.0.3.0/24"]
+  public_subnets  = ["10.0.101.0/24","10.0.102.0/24","10.0.103.0/24"]
+
+  enable_nat_gateway = true
+  single_nat_gateway = true
+}
+
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 18.0"
+
+  cluster_name    = var.cluster_name
+  cluster_version = "1.27" # choose a supported Kubernetes version
+  subnets         = module.vpc.private_subnets
+  vpc_id          = module.vpc.vpc_id
+
+  node_groups = {
+    default = {
+      desired_capacity = 3
+      max_capacity     = 5
+      min_capacity     = 2
+
+      instance_types = ["t3.medium"]
+      key_name       = "my-ssh-key" # optional
+    }
+  }
+
+  manage_aws_auth = true
+}
+```
+
+### outputs.tf
+
+```hcl
+output "cluster_id" {
+  value = module.eks.cluster_id
+}
+
+output "kubeconfig" {
+  value = module.eks.kubeconfig
+  sensitive = true
+}
+```
+
+#### How to deploy
+
+1. `terraform init` (after configuring backend with your bucket/table)
+2. `terraform plan -var 'region=us-east-1'`
+3. `terraform apply -var 'region=us-east-1'`
+
+#### Notes
+
+- The module will create IAM roles, node security groups, and optionally a worker node AutoScalingGroup/Managed Node Group.
+- For IRSA, the module can create the OIDC provider; you still must configure specific IAM role mappings for Helm charts or service accounts as required.
+
+---
+
+15 — Post-deploy: kubeconfig, Helm charts, Load Balancer Controller, and IRSA
+
+### kubeconfig
+
+After Terraform creates the cluster, you can update your local kubeconfig:
+
+```bash
+aws eks --region ${var.region} update-kubeconfig --name ${module.eks.cluster_id}
+kubectl get nodes
+```
+
+Or pull `module.eks.kubeconfig` output and write it to `~/.kube/config` (be careful with sensitive outputs).
+
+### Install AWS Load Balancer Controller (ALB)
+
+1. Create IAM OIDC provider for IRSA if not already present.
+2. Create an IAM role for the controller with the policy documented by AWS.
+3. Install via Helm and use the service account annotated with that IAM role.
+
+Example helm command (conceptual):
+
+```bash
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system \
+  --set clusterName=${module.eks.cluster_id} \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller
+```
+
+(Use Terraform `helm_release` or `kubernetes_manifest` or `helm` provider if you want to automate this.)
+
+### IRSA example (concept)
+
+- Create IAM OIDC provider attached to the EKS cluster (module often can create it).
+- Create an IAM policy with required permissions.
+- Create an IAM role with trust policy for the OIDC provider and the service account `sub` condition.
+- Create the Kubernetes `ServiceAccount` with the annotation `eks.amazonaws.com/role-arn: arn:aws:iam::<ACCOUNT>:role/<role-name>`.
+
+Many Terraform modules provide helpers to create IRSA roles; otherwise use `aws_iam_openid_connect_provider`, `aws_iam_role`, and `kubernetes_service_account` resources.
+
+### Install essentials
+
+- Metrics Server (for HorizontalPodAutoscaler)
+- Cluster Autoscaler (unless using Karpenter)
+- Prometheus & Grafana or CloudWatch agent
+- Cert-manager (for TLS management)
+
+---
+
+16 — Common problems & troubleshooting tips
+
+- **Nodes `NotReady`**: check kubelet logs on the node, check security group rules (node -> control plane port 443), ensure `aws-node` CNI pod running.
+- **No pod IPs available**: ENI or IP exhaustion in subnets or instance type ENI limits — consider larger instance types or CNI prefix delegation.
+- **IAM auth errors**: ensure `aws-auth` ConfigMap correctly maps node instance role and IAM users/roles.
+- **ALB/NLB not provisioning**: check the Load Balancer Controller logs and the IAM role/policy.
+
+---
+
+17 — Cost considerations
+
+- EKS control plane has a fixed hourly charge per cluster (check current pricing on AWS).
+- Managed nodes/EC2 and EBS are the bulk of running costs.
+- Use spot nodes for non-critical workloads and autoscaling to reduce idle costs.
+
+---
+
+18 — Cleaning up
+
+If you created resources for testing:
+
+- With Terraform: `terraform destroy` (will remove resources managed by Terraform).
+- Make sure to remove any leftover ALBs, EBS volumes, or S3 buckets that are outside Terraform management.
+
+---
+
+19 — Appendix: useful commands & snippets
+
+```bash
+# Update kubeconfig
+aws eks --region us-east-1 update-kubeconfig --name demo-eks
+
+# List nodes
+kubectl get nodes -o wide
+
+# Describe node
+kubectl describe node <node-name>
+
+# Install cert-manager
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.12.1/cert-manager.yaml
+
+# List cluster logging settings
+aws eks describe-cluster --name demo-eks --query "cluster.logging"
+```
+
+---
+
+Final notes
+
+This guide can be used as a base blueprint. For production use, customize instance families, AZ placement, IAM policies, and security settings to fit your compliance requirements and organizational policies.
+
+---
+
+Next steps (recommended sequence)
+
+1. **Sandbox trial** — create a small, single-AZ cluster (or a 3-node multi-AZ in a separate account) to validate your Terraform code and onboarding steps.
+2. **Automation pipeline** — store your Terraform in a Git repo and run `terraform plan`/`apply` from a CI runner with least-privilege credentials (use separate AWS accounts or IAM roles with cross-account assumptions for prod).
+3. **Policy & governance** — integrate AWS Config, guardrails (e.g., OPA/Gatekeeper), and IAM permission reviews before creating production clusters.
+4. **Observability baseline** — deploy metrics (Prometheus), logs (CloudWatch), and alerting (PagerDuty/SNS) early so you catch regressions during upgrades.
+5. **Upgrade plan** — define a tested upgrade path for Kubernetes versions and node AMIs. Schedule maintenance windows and run upgrades first in staging.
+
+---
+
+Cheatsheet: useful Terraform snippets
+
+### Create OIDC provider (if not using module helper)
+
+```hcl
+resource "aws_iam_openid_connect_provider" "eks" {
+  url = module.eks.cluster_oidc_issuer_url
+  client_id_list = ["sts.amazonaws.com"]
+  thumbprint_list = ["<thumbprint>"]
+}
+```
+
+### Example IRSA role for the AWS Load Balancer Controller
+
+```hcl
+resource "aws_iam_role" "alb_controller" {
+  name = "alb-controller-role-${var.cluster_name}"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = { Federated = aws_iam_openid_connect_provider.eks.arn },
+      Action = "sts:AssumeRoleWithWebIdentity",
+      Condition = { StringEquals = { "${replace(module.eks.cluster_oidc_issuer, "https://", "")}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller" } }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "alb_policy" {
+  role       = aws_iam_role.alb_controller.name
+  policy_arn =
+```
+
+(End of document)

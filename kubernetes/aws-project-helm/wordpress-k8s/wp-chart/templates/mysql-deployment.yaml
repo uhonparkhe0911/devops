@@ -2,53 +2,55 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ .Release.Name }}-mysql-deployment"
+  name: "{{ .Release.Name }}-mysql"
   labels:
     app: wordpress
+    release: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
       app: wordpress
       tier: mysql
-  replicas: "{{ .Values.mysql.replicaCount }}"
+  replicas: {{ .Values.mysql.replicaCount }}
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
         app: wordpress
+        tier: mysql
     spec:
       containers:
       - name: mysql
         image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
         imagePullPolicy: "{{ .Values.mysql.image.pullPolicy }}"
         env:
-          - name: MYSQL_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: "{{ .Values.mysql.secret.name }}"
-                key: "{{ .Values.mysql.secret.rootPasswordKey }}"
-          - name: MYSQL_DATABASE
-            valueFrom:
-              secretKeyRef:
-                name: "{{ .Values.mysql.secret.name }}"
-                key: "{{ .Values.mysql.secret.databasekey }}"
-          - name: MYSQL_USER
-            valueFrom:
-              secretKeyRef:
-                name: "{{ .Values.mysql.secret.name }}"
-                key: "{{ .Values.mysql.secret.userKey }}"
-          - name: MYSQL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: "{{ .Values.mysql.secret.name }}"
-                key: "{{ .Values.mysql.secret.passwordKey }}"
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.secret.name }}"
+              key: mysql-root-password
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.secret.name }}"
+              key: mysql-database
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.secret.name }}"
+              key: mysql-user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.secret.name }}"
+              key: mysql-password
         ports:
-        - containerPort: "{{ .Values.mysql.service.port }}"
+        - containerPort: {{ .Values.mysql.service.port }}
           name: "{{ .Values.mysql.service.name }}"
         volumeMounts:
-          - name: "{{ .Values.mysql.persistence.name }}"
-            mountPath: "{{ .Values.mysql.persistence.mountPath }}"
+        - name: "{{ .Values.mysql.persistence.name }}"
+          mountPath: "{{ .Values.mysql.persistence.mountPath }}"
       volumes:
       - name: "{{ .Values.mysql.persistence.name }}"
         persistentVolumeClaim:

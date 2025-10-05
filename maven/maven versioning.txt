@@ -1,0 +1,145 @@
+MAVEN VERSIONING — MAJOR, MINOR, PATCH & SNAPSHOT
+========================================================
+
+Overview:
+----------
+Maven uses a **semantic versioning convention** to identify and manage versions of a project’s artifacts.  
+This version appears inside the `<version>` tag in your pom.xml.
+
+Example:
+<version>2.5.1</version>
+
+Here:
+  - **2** → Major version  
+  - **5** → Minor version  
+  - **1** → Patch (or incremental) version
+
+Optionally, Maven versions can include **qualifiers** such as `-SNAPSHOT`, `-RC`, `-beta`, or custom tags.
+
+------------------------------------------------------
+1️⃣ MAJOR VERSION
+------------------------------------------------------
+Definition:
+Represents **incompatible or breaking changes** in your project’s API or behavior.
+
+Example:
+- From `1.x.x` → `2.0.0`
+- Indicates significant updates, new architecture, or API changes that may break backward compatibility.
+
+Example Use Case:
+- You change core APIs or remove functions.
+- The new version may not work with previous dependent projects.
+
+------------------------------------------------------
+2️⃣ MINOR VERSION
+------------------------------------------------------
+Definition:
+Represents **new features or improvements** that are **backward-compatible**.
+
+Example:
+- From `1.2.0` → `1.3.0`
+- No breaking changes; older integrations still work.
+
+Example Use Case:
+- You added new REST endpoints or modules without breaking existing ones.
+- Added non-breaking enhancements or optimizations.
+
+------------------------------------------------------
+3️⃣ PATCH / INCREMENTAL VERSION
+------------------------------------------------------
+Definition:
+Represents **bug fixes, small patches, or performance improvements** — no new features.
+
+Example:
+- From `1.3.1` → `1.3.2`
+
+Example Use Case:
+- You fixed a minor bug in logic, documentation, or build process.
+- Does not affect existing functionality.
+
+------------------------------------------------------
+4️⃣ SNAPSHOT VERSION
+------------------------------------------------------
+Definition:
+`SNAPSHOT` represents a **work-in-progress version** of your project.
+
+Example:
+<version>1.2.0-SNAPSHOT</version>
+
+Meaning:
+- A **development build** or **unstable version**.
+- It can change at any time — not final.
+- Typically used during ongoing development before a release.
+
+Behavior:
+- Maven treats SNAPSHOT artifacts specially.
+- Each time you build, it uploads a new timestamped version to the repository.
+- When another project depends on it, Maven fetches the **latest** SNAPSHOT version from your remote repository.
+
+------------------------------------------------------
+5️⃣ RELEASE VERSION
+------------------------------------------------------
+Definition:
+A **stable, production-ready version** of the project.
+
+Example:
+<version>1.2.0</version>
+
+Difference vs SNAPSHOT:
+| Aspect | SNAPSHOT | RELEASE |
+|---------|-----------|----------|
+| Stability | Unstable | Stable |
+| Frequency | Updated frequently | Finalized |
+| Repository | Deployed to snapshot repo | Deployed to release repo |
+| Use Case | During active development | After testing & validation |
+
+------------------------------------------------------
+6️⃣ QUALIFIERS
+------------------------------------------------------
+You can append extra identifiers to represent pre-release stages:
+
+Examples:
+| Version | Meaning |
+|----------|----------|
+| 1.0.0-alpha | Early unstable build |
+| 1.0.0-beta | Feature complete, may have bugs |
+| 1.0.0-RC1 | Release Candidate 1 |
+| 1.0.0 | Stable release |
+| 1.0.1 | Patch/fix after release |
+
+------------------------------------------------------
+7️⃣ VERSION RANGE (in dependencies)
+------------------------------------------------------
+Maven allows specifying version ranges in dependencies.
+
+Examples:
+| Syntax | Meaning |
+|----------|----------|
+| [1.0,2.0) | >=1.0 and <2.0 |
+| [1.0] | Exactly 1.0 |
+| (1.0,] | Greater than 1.0 |
+| [1.0,1.2] | Between 1.0 and 1.2 (inclusive) |
+
+------------------------------------------------------
+Example Summary:
+------------------------------------------------------
+| Version | Meaning |
+|----------|----------|
+| 1.0.0-SNAPSHOT | Development build (in progress) |
+| 1.0.0 | First stable release |
+| 1.1.0 | Backward-compatible feature addition |
+| 2.0.0 | Major rework / breaking changes |
+| 2.0.1 | Small bug fix in major version 2 |
+
+------------------------------------------------------
+Best Practices:
+------------------------------------------------------
+✅ Always use `-SNAPSHOT` for development builds.  
+✅ Use `RELEASE` versions only after testing and QA.  
+✅ Update version numbers consistently across modules.  
+✅ Avoid using `SNAPSHOT` dependencies in production.  
+✅ Tag releases in your version control system.
+
+------------------------------------------------------
+End of Document
+------------------------------------------------------

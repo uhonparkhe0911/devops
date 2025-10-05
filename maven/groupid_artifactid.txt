@@ -1,0 +1,50 @@
+
+------------------------------------------------------
+3️⃣ RELATIONSHIP BETWEEN GROUPID AND ARTIFACTID
+------------------------------------------------------
+- **groupId** = who produces it (organization/namespace)  
+- **artifactId** = what is produced (project/module name)  
+- **version** = which version of the artifact  
+
+Together, they **uniquely locate an artifact in Maven repositories**.
+
+------------------------------------------------------
+4️⃣ MULTI-MODULE PROJECT EXAMPLE
+------------------------------------------------------
+Parent pom.xml:
+<groupId>com.example</groupId>
+<artifactId>parent-project</artifactId>
+<version>1.0.0</version>
+<packaging>pom</packaging>
+
+Child module (service-a/pom.xml):
+<parent>
+    <groupId>com.example</groupId>
+    <artifactId>parent-project</artifactId>
+    <version>1.0.0</version>
+</parent>
+<artifactId>service-a</artifactId>
+
+Child module (service-b/pom.xml):
+<parent>
+    <groupId>com.example</groupId>
+    <artifactId>parent-project</artifactId>
+    <version>1.0.0</version>
+</parent>
+<artifactId>service-b</artifactId>
+
+Full Coordinates:
+- `com.example:service-a:1.0.0`  
+- `com.example:service-b:1.0.0`  
+
+------------------------------------------------------
+5️⃣ BEST PRACTICES
+------------------------------------------------------
+✅ Keep groupId unique to your organization  
+✅ Use artifactId that clearly describes the module/project  
+✅ Do not reuse artifactId under the same groupId for different projects  
+✅ Follow consistent naming conventions across all modules  
+
+------------------------------------------------------
+End of Document
+------------------------------------------------------

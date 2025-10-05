@@ -1,0 +1,278 @@
+MAVEN COMMANDS AND USAGE
+=============================
+
+Apache Maven is a powerful build automation tool used primarily for Java projects. It uses a Project Object Model (POM) file (pom.xml) to manage dependencies, build lifecycle, plugins, and project information.
+
+------------------------------------------------------
+1. Basic Maven Commands
+------------------------------------------------------
+
+1.1. Check Maven Version
+    Command:
+        mvn -v
+    Description:
+        Displays the installed Maven version and environment details.
+
+1.2. Create a New Maven Project
+    Command:
+        mvn archetype:generate -DgroupId=com.example -DartifactId=myapp -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+    Description:
+        Creates a new Maven project with the specified groupId, artifactId, and archetype.
+
+1.3. Compile Source Code
+    Command:
+        mvn compile
+    Description:
+        Compiles the source code of the project located in src/main/java.
+
+1.4. Clean Project
+    Command:
+        mvn clean
+    Description:
+        Deletes the target directory, removing all compiled files and build artifacts.
+
+1.5. Package the Project
+    Command:
+        mvn package
+    Description:
+        Compiles the code, runs tests, and packages the compiled code into a JAR/WAR file located in the target directory.
+
+1.6. Install to Local Repository
+    Command:
+        mvn install
+    Description:
+        Installs the built artifact (JAR/WAR) into the local Maven repository (~/.m2/repository).
+
+1.7. Run Tests
+    Command:
+        mvn test
+    Description:
+        Runs the unit tests of the project using frameworks like JUnit or TestNG.
+
+1.8. Run a Maven Project
+    Command:
+        mvn exec:java -Dexec.mainClass="com.example.Main"
+    Description:
+        Executes the main class directly using the Maven exec plugin.
+
+------------------------------------------------------
+2. Maven Lifecycle Phases
+------------------------------------------------------
+
+Maven defines a set of build lifecycles, each with phases:
+
+2.1. Default Lifecycle (Build and Deployment)
+    - validate: Checks the project structure and verifies all required information.
+    - compile: Compiles the source code.
+    - test: Runs tests using a testing framework.
+    - package: Packages compiled code into a distributable format (JAR/WAR).
+    - verify: Runs checks to verify the package.
+    - install: Installs the package to the local repository.
+    - deploy: Copies the final package to a remote repository for sharing.
+
+2.2. Clean Lifecycle
+    - pre-clean: Executes before the clean phase.
+    - clean: Removes previous build artifacts.
+    - post-clean: Executes after clean.
+
+2.3. Site Lifecycle
+    - site: Generates project documentation.
+    - deploy: Deploys site documentation to the server.
+
+------------------------------------------------------
+3. Maven Dependency Commands
+------------------------------------------------------
+
+3.1. View Dependency Tree
+    Command:
+        mvn dependency:tree
+    Description:
+        Displays the project’s dependency hierarchy.
+
+3.2. List All Dependencies
+    Command:
+        mvn dependency:list
+    Description:
+        Lists all dependencies used by the project.
+
+3.3. Analyze Dependencies
+    Command:
+        mvn dependency:analyze
+    Description:
+        Checks for unused or undeclared dependencies.
+
+3.4. Copy Dependencies
+    Command:
+        mvn dependency:copy-dependencies
+    Description:
+        Copies all dependencies to the target/dependency directory.
+
+------------------------------------------------------
+4. Maven Plugin Commands
+------------------------------------------------------
+
+4.1. Run Specific Plugin Goal
+    Command:
+        mvn <plugin-name>:<goal>
+    Example:
+        mvn compiler:compile
+    Description:
+        Executes a specific goal of a plugin.
+
+4.2. View Available Plugins
+    Command:
+        mvn help:effective-pom
+    Description:
+        Displays the effective POM including plugin configurations.
+
+------------------------------------------------------
+5. Maven Help Commands
+------------------------------------------------------
+
+5.1. Display All Goals
+    Command:
+        mvn help:describe -Dcmd=compile
+    Description:
+        Displays detailed information about the specified goal.
+
+5.2. Display Effective Settings
+    Command:
+        mvn help:effective-settings
+    Description:
+        Displays merged settings from global and user-level settings.xml files.
+
+------------------------------------------------------
+6. Maven Build Profiles
+------------------------------------------------------
+
+6.1. Run with a Specific Profile
+    Command:
+        mvn clean install -P<profile-name>
+    Description:
+        Executes build with the specified profile defined in pom.xml.
+
+------------------------------------------------------
+7. Skipping Tests and Forcing Updates
+------------------------------------------------------
+
+7.1. Skip Tests
+    Command:
+        mvn install -DskipTests
+    Description:
+        Compiles and packages code without running tests.
+
+7.2. Force Dependency Updates
+    Command:
+        mvn clean install -U
+    Description:
+        Forces Maven to update dependencies from remote repositories.
+
+------------------------------------------------------
+8. Useful Combined Commands
+------------------------------------------------------
+
+8.1. Clean, Compile, and Package
+    Command:
+        mvn clean package
+
+8.2. Clean and Install
+    Command:
+        mvn clean install
+
+8.3. Skip Tests During Install
+    Command:
+        mvn clean install -DskipTests
+
+------------------------------------------------------
+9. Maven Wrapper (mvnw)
+------------------------------------------------------
+
+    - The Maven Wrapper allows you to run Maven without requiring it to be pre-installed.
+    Commands:
+        ./mvnw clean install        (Linux/macOS)
+        mvnw.cmd clean install      (Windows)
+
+------------------------------------------------------
+10. Common Maven Options
+------------------------------------------------------
+
+    - -X : Enable debug output
+    - -q : Quiet mode
+    - -D : Define system property
+    - -f : Specify POM file location
+    - -U : Force update of snapshots
+
+------------------------------------------------------
+11. Example Build Workflow
+------------------------------------------------------
+
+    mvn clean
+    mvn compile
+    mvn test
+    mvn package
+    mvn install
+
+------------------------------------------------------
+End of Document
+------------------------------------------------------
+
+
+======================================================
+⭐ DETAILED SECTION: mvn clean install ⭐
+======================================================
+
+Command:
+    mvn clean install
+
+What It Does:
+--------------
+This command executes two major Maven lifecycle phases:
+1. clean  → Removes previous build artifacts (target/ directory).
+2. install → Builds, tests, packages, and installs the artifact into the local Maven repository (~/.m2/repository).
+
+Lifecycle Steps Executed:
+--------------------------
+- validate: Verify project structure and information.
+- compile: Compile the source code.
+- test: Execute unit tests.
+- package: Create JAR/WAR file.
+- verify: Perform integration or verification tests.
+- install: Copy the final artifact to the local Maven repository.
+
+Why It’s Important:
+--------------------
+- Ensures a clean, fresh build environment.
+- Automatically installs the artifact locally for reuse by other projects.
+- Most frequently used command in CI/CD pipelines (Jenkins, GitLab, GitHub Actions, etc.).
+- Prevents issues due to stale compiled files.
+
+Common Variations:
+-------------------
+- mvn clean install -DskipTests   → Skips running tests during build.
+- mvn clean install -U            → Forces Maven to update dependencies.
+- mvn clean install -P<profile>   → Uses a specific build profile from pom.xml.
+- mvn clean install -X            → Enables debug output for troubleshooting.
+
+Example Workflow:
+-----------------
+    mvn clean
+    mvn install
+    # Shortcut:
+    mvn clean install
+
+Real-World Example:
+--------------------
+When developing multi-module or microservice projects:
+- Running mvn clean install in one service builds and installs its updated JAR locally.
+- Other dependent modules automatically use the latest version without manual copying.
+
+Summary:
+---------
+'mvn clean install' is the most widely used Maven command because it ensures that:
+✅ The project is built cleanly.
+✅ Dependencies are up to date.
+✅ The artifact is ready for deployment or local use.
+
+======================================================
+End of mvn clean install Section
+======================================================

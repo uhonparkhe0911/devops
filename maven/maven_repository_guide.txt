@@ -1,0 +1,122 @@
+
+MAVEN REPOSITORY — COMPLETE GUIDE
+=================================================
+
+Overview:
+----------
+A Maven Repository is a storage location for project artifacts (JARs, WARs, POMs, plugins, etc.) that can be reused by multiple projects.
+
+Maven uses repositories to:
+- Download dependencies required by a project
+- Store artifacts built by your project
+- Share artifacts across teams and projects
+
+Types of Maven Repositories:
+------------------------------
+
+1️⃣ Local Repository
+------------------------
+- Stored on your local machine.
+- Default location: ~/.m2/repository (Linux/Mac) or C:\Users\<username>\.m2\repository (Windows)
+- Maven automatically downloads dependencies from remote repositories into the local repo.
+- All builds first check the local repository before fetching remotely.
+
+Example:
+~/.m2/repository/com/example/myapp/1.0.0/myapp-1.0.0.jar
+
+Commands:
+- Clean local repository:
+mvn dependency:purge-local-repository
+- Force update dependencies:
+mvn clean install -U
+
+2️⃣ Remote Repository
+------------------------
+- A repository hosted remotely on the internet or a private server.
+- Maven downloads dependencies from remote repositories if not found locally.
+
+Common Remote Repositories:
+- Maven Central (default): https://repo.maven.apache.org/maven2
+- Company/private repositories (Nexus, Artifactory)
+
+Example in pom.xml:
+<repositories>
+    <repository>
+        <id>central</id>
+        <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    <repository>
+        <id>my-company-repo</id>
+        <url>https://nexus.example.com/repository/maven-releases/</url>
+    </repository>
+</repositories>
+
+3️⃣ Snapshot Repository
+---------------------------
+- Used to store SNAPSHOT versions of artifacts (development builds).
+- Maven automatically manages timestamped SNAPSHOT artifacts.
+
+Repository Layout:
+-----------------
+- Artifacts are stored in a folder structure based on groupId, artifactId, and version.
+Example:
+GroupId: com.example
+ArtifactId: myapp
+Version: 1.0.0
+
+Path in repository:
+com/example/myapp/1.0.0/myapp-1.0.0.jar
+
+Files in artifact folder:
+- myapp-1.0.0.jar → compiled artifact
+- myapp-1.0.0.pom → pom.xml metadata
+- myapp-1.0.0-sources.jar → source code (optional)
+- myapp-1.0.0-javadoc.jar → Javadoc (optional)
+
+Adding Dependencies:
+--------------------
+In pom.xml:
+<dependencies>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.12.0</version>
+    </dependency>
+</dependencies>
+
+Maven automatically:
+1. Checks local repository
+2. Downloads from remote repository if not present locally
+3. Stores it in the local repository for future builds
+
+Deploying Artifacts to Repository:
+----------------------------------
+1. Deploy to local repository:
+mvn install
+- Builds the project and installs artifact in local repo (~/.m2/repository)
+
+2. Deploy to remote repository:
+mvn deploy
+- Requires <distributionManagement> section in pom.xml specifying the repository URL
+
+<distributionManagement>
+    <repository>
+        <id>releases</id>
+        <url>https://nexus.example.com/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+        <id>snapshots</id>
+        <url>https://nexus.example.com/repository/maven-snapshots/</url>
+    </snapshotRepository>
+</distributionManagement>
+
+Best Practices:
+----------------
+✅ Use Maven Central for standard libraries
+✅ Use private repository (Nexus/Artifactory) for company artifacts
+✅ Avoid deploying SNAPSHOT artifacts to release repository
+✅ Keep local repository clean periodically to avoid conflicts
+✅ Use versioning properly (major, minor, patch, snapshot)
+
+End of Document
+-------------------------------------------------

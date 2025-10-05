@@ -1,0 +1,179 @@
+POM.XML (PROJECT OBJECT MODEL)
+=================================
+
+Overview:
+----------
+The pom.xml file is the core configuration file of a Maven project. It defines the project's build, dependencies, plugins, and various configurations.
+
+Location:
+----------
+Every Maven project has a pom.xml file located at its root directory.
+
+Purpose of pom.xml:
+-------------------
+1. Defines project metadata (name, version, groupId, artifactId, etc.).
+2. Manages external dependencies.
+3. Configures build plugins and goals.
+4. Defines repositories (local/remote).
+5. Manages build profiles (e.g., dev, prod).
+6. Supports inheritance and aggregation (multi-module projects).
+
+------------------------------------------------------
+Basic Structure:
+------------------------------------------------------
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Project Coordinates -->
+  <groupId>com.example</groupId>
+  <artifactId>myapp</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <!-- Project Info -->
+  <name>My Application</name>
+  <url>https://example.com/myapp</url>
+  <description>A sample Maven Java application</description>
+
+  <!-- Dependencies -->
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <version>3.2.0</version>
+    </dependency>
+  </dependencies>
+
+  <!-- Build Plugins -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.1</version>
+        <configuration>
+          <source>17</source>
+          <target>17</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- Profiles -->
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <properties>
+        <env>development</env>
+      </properties>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <env>production</env>
+      </properties>
+    </profile>
+  </profiles>
+
+</project>
+
+------------------------------------------------------
+Key Elements Explained:
+------------------------------------------------------
+| Element | Description |
+|----------|--------------|
+| <modelVersion> | Always 4.0.0 for Maven 3+ |
+| <groupId> | Defines project’s group or organization |
+| <artifactId> | Project/module identifier |
+| <version> | Version number (e.g., 1.0.0, 1.0-SNAPSHOT) |
+| <packaging> | Type of output (jar, war, ear, pom) |
+| <dependencies> | External libraries required by project |
+| <repositories> | External sources for dependency retrieval |
+| <build> | Plugin configurations for build process |
+| <profiles> | Configurations for multiple environments |
+| <properties> | Reusable variables like Java version |
+
+------------------------------------------------------
+Dependency Management:
+------------------------------------------------------
+Dependencies are declared inside <dependencies> tag.
+
+Example:
+<dependency>
+  <groupId>org.apache.commons</groupId>
+  <artifactId>commons-lang3</artifactId>
+  <version>3.12.0</version>
+</dependency>
+
+Maven automatically downloads dependencies from repositories.
+
+------------------------------------------------------
+Dependency Scopes:
+------------------------------------------------------
+| Scope | Description |
+|--------|--------------|
+| compile | Default scope; available in all classpaths |
+| provided | Used during compile but not packaged |
+| runtime | Used only at runtime |
+| test | Used only for testing purposes |
+| system | Manually provided JARs |
+| import | Used to import dependency management |
+
+------------------------------------------------------
+Build Section Example:
+------------------------------------------------------
+<build>
+  <finalName>myapp</finalName>
+  <plugins>
+    <plugin>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <configuration>
+        <source>17</source>
+        <target>17</target>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+
+------------------------------------------------------
+Inheritance & Aggregation:
+------------------------------------------------------
+Parent POM Example:
+<packaging>pom</packaging>
+<modules>
+  <module>module1</module>
+  <module>module2</module>
+</modules>
+
+Child POM Example:
+<parent>
+  <groupId>com.example</groupId>
+  <artifactId>parent-project</artifactId>
+  <version>1.0.0</version>
+</parent>
+
+------------------------------------------------------
+Effective POM:
+------------------------------------------------------
+Command:
+    mvn help:effective-pom
+Description:
+    Displays the complete merged configuration (default + inherited + defined).
+
+------------------------------------------------------
+Why pom.xml Is Crucial:
+------------------------------------------------------
+- Defines complete project structure and build flow.
+- Handles dependency management automatically.
+- Ensures consistent, reproducible builds.
+- Enables environment-based configurations using profiles.
+- Centralizes all project settings and metadata.
+- Acts as living documentation for project setup.
+
+------------------------------------------------------
+End of Document
+------------------------------------------------------

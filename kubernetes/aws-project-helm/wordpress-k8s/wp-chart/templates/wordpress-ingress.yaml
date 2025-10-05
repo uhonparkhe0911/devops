@@ -1,18 +1,24 @@
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: "{{ .Release.Name }}-wordpress-ingress"
+  labels:
+    app: wordpress
+    chart: {{ include "wp-chart.chart" . }}
+    release: {{ .Release.Name }}
   annotations:
-    kubernetes.io/ingress.class: "{{ .Values.wordpress.ingress.className }}"
+    kubernetes.io/ingress.class: {{ .Values.wordpress.ingress.className }}
 spec:
+  ingressClassName: nginx
   rules:
-    - host: "{{ .Values.wordpress.ingress.hostName }}"
-      http:
-        paths:
-          - path: "{{ .Values.wordpress.ingress.path }}"
-            pathType: "{{ .Values.wordpress.ingress.pathType }}"
-            backend:
-              service:
-                name: wordpress
-                port:
-                  number: "{{ .Values.wordpress.service.port }}"
+  - host: {{ .Values.wordpress.ingress.hostName }}
+    http:
+      paths:
+      - path: {{ .Values.wordpress.ingress.path }}
+        pathType: {{ .Values.wordpress.ingress.pathType }}
+        backend:
+          service:
+            name: "{{ .Release.Name }}-wordpress"
+            port:
+              number: {{ .Values.wordpress.service.port }}
