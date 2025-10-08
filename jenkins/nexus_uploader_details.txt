@@ -1,0 +1,43 @@
+# Nexus Artifact Uploader Jenkins Setup
+
+## 1. Install Plugin
+- Go to **Manage Jenkins → Manage Plugins → Available tab**
+- Search for **"Nexus Artifact Uploader"**
+- Install and restart Jenkins
+
+## 2. Configure Credentials
+- Navigate to **Manage Jenkins → Credentials → (Global) → Add Credentials**
+  - Kind: Username with password
+  - ID: `nexus-creds`
+  - Username: your Nexus username (e.g., jenkins)
+  - Password: your Nexus user password
+
+## 3. Prepare Nexus Repository
+- Log into Nexus
+- Create a new **hosted repository** (e.g., maven-releases)
+- Allow redeploy if needed
+- Note the URL: http://<nexus-server>:8081/repository/maven-releases/
+
+## 4. Jenkinsfile Stage Example
+
+stage('Upload Artifact to Nexus') {
+    steps {
+        nexusArtifactUploader(
+            nexusVersion: 'nexus3',
+            protocol: 'http',
+            nexusUrl: 'your-nexus-server:8081',
+            groupId: 'com.example.app',
+            version: '1.0.0',
+            repository: 'maven-releases',
+            credentialsId: 'nexus-creds',
+            artifacts: [
+                [
+                    artifactId: 'myapp',
+                    classifier: '',
+                    file: 'target/myapp-1.0.0.jar',
+                    type: 'jar'
+                ]
+            ]
+        )
+    }
+}

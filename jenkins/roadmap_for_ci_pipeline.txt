@@ -1,0 +1,10 @@
+Steps:
+
+1)Jenkins Setup
+2)Nexus Setup
+3)SonarQube Setup
+4)Security Group
+5)Plugins
+6)Integrate - SonarQube, Nexus
+7)Write pipeline script
+8)Set notifications
