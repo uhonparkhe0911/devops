@@ -1,0 +1,182 @@
+🐳 Docker CI/CD Pipeline with Jenkins and AWS ECR
+
+---
+
+## 1. AWS Setup
+
+### Step 1: Create an IAM User for Jenkins
+
+1. Go to AWS Console → IAM → Users → Create User
+2. Name: `jenkins-ecr-user`
+3. Choose **Programmatic Access**
+4. Attach policies:
+
+   * AmazonEC2ContainerRegistryFullAccess
+   * (Optional) AmazonS3ReadOnlyAccess
+5. Save Access Key ID and Secret Key
+
+### Step 2: Create an ECR Repository
+
+```bash
+aws ecr create-repository \
+  --repository-name myapp-repo \
+  --region ap-south-1
+```
+
+Output example:
+
+```
+repositoryUri: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/myapp-repo
+```
+
+---
+
+## 2. Jenkins Setup
+
+### Step 1: Install Required Plugins
+
+* Docker
+* Docker Pipeline
+* Amazon ECR
+* AWS SDK for Credentials (CloudBees AWS Credentials Plugin)
+* Pipeline
+
+### Step 2: Add AWS Credentials
+
+1. Manage Jenkins → Credentials → Global → Add Credentials
+2. Kind: AWS Credentials
+3. ID: `aws-jenkins-credentials`
+4. Add Access Key and Secret Key
+
+### Step 3: Install Docker Engine on Jenkins Node
+
+```bash
+sudo apt update
+sudo apt install ca-certificates curl gnupg -y
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+```
+
+### Step 4: Add Jenkins User to Docker Group
+
+```bash
+sudo usermod -aG docker jenkins
+sudo reboot
+```
+
+### Step 5: Install AWS CLI
+
+```bash
+sudo apt install awscli -y
+aws --version
+```
+
+---
+
+## 3. Jenkinsfile (Pipeline as Code)
+
+```groovy
+pipeline {
+    agent any
+
+    environment {
+        AWS_DEFAULT_REGION = 'ap-south-1'
+        AWS_ACCOUNT_ID = '123456789012'
+        ECR_REPO_NAME = 'myapp-repo'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        ECR_URL = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+        vprofileRegistry = "https://${ECR_URL}"
+        registryCredential = "aws-jenkins-credentials"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Login to ECR') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-jenkins-credentials'
+                ]]) {
+                    sh '''
+                    aws ecr get-login-password --region $AWS_DEFAULT_REGION | \
+                    docker login --username AWS --password-stdin $ECR_URL
+                    '''
+                }
+            }
+        }
+
+        stage('Build Image (Docker Plugin)') {
+            steps {
+                script {
+                    app = docker.build("${ECR_REPO_NAME}:${BUILD_NUMBER}", "./Docker-files/app/multistage/")
+                }
+            }
+        }
+
+        stage('Tag & Push Image to ECR') {
+            steps {
+                script {
+                    docker.withRegistry(vprofileRegistry, registryCredential) {
+                        app.push("${BUILD_NUMBER}")
+                        app.push('latest')
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Docker image pushed to: ${ECR_URL}/${ECR_REPO_NAME}:${BUILD_NUMBER}"
+        }
+        failure {
+            echo "❌ Build failed! Check console logs."
+        }
+    }
+}
+```
+
+---
+
+## 4. Pipeline Setup in Jenkins
+
+1. Create a new **Pipeline Job** in Jenkins.
+2. Choose **Pipeline script from SCM**.
+3. Select your Git repository containing the Jenkinsfile.
+4. Save and build the job.
+
+---
+
+## 5. Verify Image in AWS ECR
+
+```bash
+aws ecr list-images --repository-name myapp-repo --region ap-south-1
+```
+
+Expected output:
+
+```
+{
+    "imageIds": [
+        {"imageTag": "1", "imageDigest": "sha256:..."},
+        {"imageTag": "latest", "imageDigest": "sha256:..."}
+    ]
+}
+```
+
+---
+
+✅ **Your CI/CD pipeline is now ready!**
+
+* Jenkins builds the Docker image.
+* Pushes it to AWS ECR.
+* You can later deploy from ECR to ECS, EKS, or EC2 using the same image.
