@@ -1,0 +1,68 @@
+Linux Processes and Services - Summary
+------------------------------------------------------------
+
+1. Linux Processes
+------------------------------------------------------------
+- A process is a running instance of a program.
+- Linux supports multi-tasking with multiple processes simultaneously.
+
+Process Types:
+- Foreground Process: Runs in terminal; user waits for completion.
+- Background Process: Runs detached; terminal can be used for other tasks (command &).
+- Daemon: Long-running background process, often starts at boot (e.g., sshd, cron).
+
+Key Concepts:
+| Concept | Description |
+|---------|-------------|
+| PID     | Process ID, unique for each process |
+| PPID    | Parent Process ID |
+| Niceness / Priority | CPU scheduling priority; lower = higher priority |
+| Zombie  | Process terminated but not yet reaped by parent |
+| Orphan  | Process whose parent has terminated; adopted by init/systemd |
+
+Common Commands:
+| Command | Purpose |
+|---------|---------|
+| ps aux | Show all running processes |
+| top / htop | Real-time process monitoring |
+| kill <PID> | Terminate a process |
+| kill -9 <PID> | Forcefully terminate a process |
+| jobs | Show background jobs in current shell |
+| fg / bg | Move jobs to foreground or background |
+| nice / renice | Set or change process priority |
+| pgrep | Find process by name |
+
+2. Linux Services (Daemons)
+------------------------------------------------------------
+- Services are long-running background processes that provide functionality.
+
+Management Systems:
+- SysVinit: Older init system using /etc/init.d/ scripts
+- systemd: Modern system controlling services, targets, and logging
+
+Systemd Commands:
+| Command | Purpose |
+|---------|---------|
+| systemctl start <service> | Start a service |
+| systemctl stop <service> | Stop a service |
+| systemctl restart <service> | Restart a service |
+| systemctl status <service> | Check service status |
+| systemctl enable <service> | Start service automatically at boot |
+| systemctl disable <service> | Disable service at boot |
+| journalctl -u <service> | View logs for a service |
+| systemctl list-units --type=service | List all active services |
+
+Common Services:
+- sshd: SSH server
+- nginx / apache2: Web server
+- cron / crond: Scheduled jobs
+- mysql / postgresql: Databases
+- docker: Container runtime
+
+Relationship Between Processes and Services:
+- Processes execute programs, including service daemons.
+- Services are specialized, long-running processes managed by systemd or init.
+- Essential for monitoring, automation, troubleshooting, and incident response in DevOps/SRE.
+
+------------------------------------------------------------
+END OF FILE

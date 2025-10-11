@@ -1,0 +1,73 @@
+Linux Folders and Permissions - Summary
+------------------------------------------------------------
+
+1. Linux Folder Structure (Filesystem Hierarchy)
+------------------------------------------------------------
+- Root directory: /
+- /bin      : Essential user binaries (ls, cp, mv)
+- /sbin     : System binaries (ifconfig, shutdown)
+- /boot     : Boot loader files (GRUB, vmlinuz)
+- /dev      : Device files (hardware devices)
+- /etc      : System and service configuration files
+- /home     : Home directories for users (/home/username)
+- /root     : Home directory for root user
+- /lib      : Essential shared libraries
+- /lib64    : 64-bit libraries
+- /media    : Mount point for removable media
+- /mnt      : Temporary mount point
+- /opt      : Optional software
+- /proc     : Virtual filesystem (process and kernel info)
+- /sys      : Virtual filesystem (kernel and devices)
+- /tmp      : Temporary files
+- /usr      : User binaries, libraries, docs
+- /usr/bin  : Non-essential user commands
+- /usr/sbin : Non-essential system admin commands
+- /var      : Variable data (logs, mail, spool)
+- /var/log  : System and application logs
+- /var/spool: Print/mail/cron queues
+- /srv      : Service data (web, ftp)
+
+2. Linux Permissions
+------------------------------------------------------------
+Entities:
+- Owner  : User who owns the file
+- Group  : Users in the file's group
+- Others : Everyone else
+
+Permission Types:
+- Read (r)    : View file / list directory
+- Write (w)   : Modify file / create/delete files in directory
+- Execute (x) : Run file / traverse directory
+
+Permission Representation:
+- Symbolic: -rwxr-xr-- (file type + owner + group + others)
+- Octal/Numeric: chmod 754 file.txt (r=4, w=2, x=1)
+  Example: 7(owner)=rwx, 5(group)=r-x, 4(others)=r--
+
+Commands:
+- ls -l      : Show files with permissions
+- chmod      : Change permissions
+- chown      : Change file owner
+- chgrp      : Change group
+- umask      : Set default permissions for new files
+- stat file  : Show detailed permission info
+
+Special Permissions:
+- SUID  (s on owner execute) : Execute file as owner (often root)
+- SGID  (s on group execute) : Execute file as group; directories inherit group
+- Sticky bit (t on others execute) : Only owner can delete file in dir (/tmp)
+
+Example:
+-rwsr-sr-t  1 root  root  4096 Oct 10 12:00 script.sh
+- rws -> owner can read, write, execute (SUID)
+- r-s -> group can read and execute (SGID)
+- r-t -> others can read and execute (sticky bit)
+
+Importance for DevOps/SRE:
+- Protect system files (/etc, /bin)
+- Control service configs (/etc/nginx)
+- Secure logs (/var/log/secure)
+- Manage container and cloud instance access
+
+------------------------------------------------------------
+END OF FILE

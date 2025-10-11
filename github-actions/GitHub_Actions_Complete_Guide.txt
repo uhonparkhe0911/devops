@@ -1,0 +1,272 @@
+GITHUB ACTIONS - COMPLETE DETAILED GUIDE
+=============================================
+
+-----------------------------------
+1. What is GitHub Actions?
+-----------------------------------
+GitHub Actions is GitHub’s built-in CI/CD and automation system.
+It lets you build, test, and deploy your code directly from your GitHub repository.
+
+Workflows are written in YAML and stored under:
+.github/workflows/
+
+Examples of what you can automate:
+- Build and test code on push or PR
+- Deploy applications
+- Lint, format, and package
+- Manage releases
+- Send notifications (Slack, email, etc.)
+
+-----------------------------------
+2. Workflow File Structure
+-----------------------------------
+Workflows are stored here:
+.github/
+ └── workflows/
+      └── <workflow-name>.yml
+
+Example:
+.github/workflows/ci.yml
+
+-----------------------------------
+3. Core Components
+-----------------------------------
+| Component | Description |
+|------------|--------------|
+| Workflow | The top-level automation definition |
+| Job | A group of steps running on a runner |
+| Step | A single action or shell command |
+| Action | A reusable automation building block |
+| Runner | The environment (machine) where jobs run |
+| Event | Trigger that starts the workflow (push, PR, schedule, etc.) |
+
+-----------------------------------
+4. Basic Workflow Example
+-----------------------------------
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: results/
+
+-----------------------------------
+5. Important Workflow Components
+-----------------------------------
+A. Workflow
+Defines the pipeline name and scope.
+Each repo can have multiple workflows (e.g., build, deploy, lint).
+
+B. Triggers (on:)
+Determines when the workflow runs.
+Examples:
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:    # Manual trigger
+  schedule:
+    - cron: '0 3 * * *' # Every day at 3 AM
+
+C. Jobs
+Workflows can have multiple jobs, running sequentially or in parallel.
+Use 'needs:' to control dependency between jobs.
+
+D. Steps
+A list of commands or prebuilt actions.
+
+E. Actions
+Reusable automation modules from the GitHub Marketplace.
+Examples:
+- actions/checkout@v4
+- actions/setup-node@v4
+- actions/upload-artifact@v4
+
+F. Runners
+Virtual machines provided by GitHub:
+- ubuntu-latest
+- windows-latest
+- macos-latest
+or self-hosted.
+
+-----------------------------------
+6. Secrets and Environment Variables
+-----------------------------------
+Secrets are stored under:
+Settings → Secrets and variables → Actions
+
+Usage:
+env:
+  AWS_KEY: ${{ secrets.AWS_KEY }}
+  NODE_ENV: production
+
+Never hardcode credentials.
+
+-----------------------------------
+7. Artifacts and Caching
+-----------------------------------
+Upload/Download Artifacts:
+- uses: actions/upload-artifact@v4
+  with:
+    name: build
+    path: dist/
+
+Cache Dependencies:
+- uses: actions/cache@v4
+  with:
+    path: ~/.npm
+    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+-----------------------------------
+8. Matrix Builds
+-----------------------------------
+Run the same job on multiple OS or versions:
+strategy:
+  matrix:
+    os: [ubuntu-latest, windows-latest]
+    node: [16, 18, 20]
+runs-on: ${{ matrix.os }}
+steps:
+  - uses: actions/setup-node@v4
+    with:
+      node-version: ${{ matrix.node }}
+  - run: npm test
+
+-----------------------------------
+9. Reusable Workflows
+-----------------------------------
+Reusable workflow (build.yml):
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Building for ${{ inputs.environment }}"
+
+Caller (deploy.yml):
+on: push
+jobs:
+  call-build:
+    uses: ./.github/workflows/build.yml
+    with:
+      environment: production
+
+-----------------------------------
+10. Example End-to-End CI/CD
+-----------------------------------
+name: Node CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: dist/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+      - run: echo "Deploying to production..."
+
+-----------------------------------
+11. Additional Features
+-----------------------------------
+A. Permissions Control
+Limit workflow token scope:
+permissions:
+  contents: read
+  deployments: write
+
+B. Concurrency Control
+Avoid overlapping runs:
+concurrency:
+  group: production
+  cancel-in-progress: true
+
+C. Conditional Execution
+Run steps/jobs conditionally:
+if: github.ref == 'refs/heads/main'
+
+D. Notifications
+Use marketplace actions for Slack, Teams, or email alerts.
+
+E. Debugging
+Set secret: ACTIONS_STEP_DEBUG=true
+Check logs under “View workflow run”.
+
+F. Self-hosted Runners
+You can host your own runners for private infrastructure or specialized hardware.
+Register via:
+Settings → Actions → Runners → New self-hosted runner
+
+G. Re-run and Reusable Artifacts
+You can re-run failed jobs and retain artifacts for a defined retention period.
+
+H. Environment Protection Rules
+GitHub Environments allow manual approvals and branch restrictions before deployment.
+
+-----------------------------------
+12. Best Practices
+-----------------------------------
+✅ Use separate workflows for CI, CD, and utility tasks
+✅ Pin actions to versions (avoid @main)
+✅ Use caching for performance
+✅ Store credentials securely as secrets
+✅ Keep workflows modular and DRY (use reusable workflows)
+✅ Clean up old artifacts
+✅ Use matrix strategy for cross-platform tests
+✅ Use concurrency groups to avoid parallel deploys
+✅ Limit permissions for security
+✅ Use environment protection rules for production
+✅ Add code coverage and test reports for visibility
+
+-----------------------------------
+END OF DOCUMENT
+-----------------------------------

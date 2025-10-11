@@ -1,0 +1,148 @@
+Script started on 2025-10-11 06:12:32+00:00 [TERM="xterm" TTY="/dev/pts/0" COLUMNS="210" LINES="58"]
+]0;vagrant@vbox:~[?2004h[vagrant@vbox ~]$ which docker
+[?2004l/usr/bin/docker
+]0;vagrant@vbox:~[?2004h[vagrant@vbox ~]$ cat /etc/passwd
+[?2004lroot:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:65534:65534:Kernel Overflow User:/:/sbin/nologin
+unbound:x:999:999:Unbound DNS resolver:/etc/unbound:/sbin/nologin
+systemd-coredump:x:998:996:systemd Core Dumper:/:/sbin/nologin
+dbus:x:81:81:System message bus:/:/sbin/nologin
+polkitd:x:997:995:User for polkitd:/:/sbin/nologin
+libstoragemgmt:x:996:992:daemon account for libstoragemgmt:/var/run/lsm:/sbin/nologin
+cockpit-ws:x:995:991:User for cockpit web service:/nonexisting:/sbin/nologin
+cockpit-wsinstance:x:994:990:User for cockpit-ws instances:/nonexisting:/sbin/nologin
+tss:x:59:59:Account used for TPM access:/dev/null:/sbin/nologin
+sssd:x:993:989:User for sssd:/:/sbin/nologin
+setroubleshoot:x:992:988::/var/lib/setroubleshoot:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/usr/share/empty.sshd:/sbin/nologin
+chrony:x:991:987::/var/lib/chrony:/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+systemd-oom:x:985:985:systemd Userspace OOM Killer:/:/usr/sbin/nologin
+systemd-resolve:x:984:984:systemd Resolver:/:/usr/sbin/nologin
+vagrant:x:1000:1000::/home/vagrant:/bin/bash
+vboxadd:x:983:1::/var/run/vboxadd:/bin/false
+]0;vagrant@vbox:~[?2004h[vagrant@vbox ~]$ usea[Kradd[K[K[K[K[K[K[Ksudo useradd -m john -s /usr/[K[K[K[K[K[K[K[K[K
+[?2004l]0;vagrant@vbox:~[?2004h[vagrant@vbox ~]$ users
+[?2004lvagrant
+]0;vagrant@vbox:~[?2004h[vagrant@vbox ~]$ cat /etc/passwd
+[?2004lroot:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:65534:65534:Kernel Overflow User:/:/sbin/nologin
+unbound:x:999:999:Unbound DNS resolver:/etc/unbound:/sbin/nologin
+systemd-coredump:x:998:996:systemd Core Dumper:/:/sbin/nologin
+dbus:x:81:81:System message bus:/:/sbin/nologin
+polkitd:x:997:995:User for polkitd:/:/sbin/nologin
+libstoragemgmt:x:996:992:daemon account for libstoragemgmt:/var/run/lsm:/sbin/nologin
+cockpit-ws:x:995:991:User for cockpit web service:/nonexisting:/sbin/nologin
+cockpit-wsinstance:x:994:990:User for cockpit-ws instances:/nonexisting:/sbin/nologin
+tss:x:59:59:Account used for TPM access:/dev/null:/sbin/nologin
+sssd:x:993:989:User for sssd:/:/sbin/nologin
+setroubleshoot:x:992:988::/var/lib/setroubleshoot:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/usr/share/empty.sshd:/sbin/nologin
+chrony:x:991:987::/var/lib/chrony:/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+systemd-oom:x:985:985:systemd Userspace OOM Killer:/:/usr/sbin/nologin
+systemd-resolve:x:984:984:systemd Resolver:/:/usr/sbin/nologin
+vagrant:x:1000:1000::/home/vagrant:/bin/bash
+vboxadd:x:983:1::/var/run/vboxadd:/bin/false
+john:x:1001:1001::/home/john:/bin/bash
+]0;vagrant@vbox:~[?2004h[vagrant@vbox ~]$ cd /f[Khome/
+[?2004l]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ ls
+[?2004l[0m[01;34mjohn[0m  [01;34mvagrant[0m
+]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ sudo passwd john
+[?2004lChanging password for user john.
+New password: 
+BAD PASSWORD: The password fails the dictionary check - it is too simplistic/systematic
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ su john
+[?2004lPassword: 
+]0;john@vbox:/home[?2004h[john@vbox home]$ ls
+[?2004l[0m[01;34mjohn[0m  [01;34mvagrant[0m
+]0;john@vbox:/home[?2004h[john@vbox home]$ whoami
+[?2004ljohn
+]0;john@vbox:/home[?2004h[john@vbox home]$ uname
+[?2004lLinux
+]0;john@vbox:/home[?2004h[john@vbox home]$ who
+[?2004lvagrant  pts/0        2025-10-11 06:00 (10.0.2.2)
+]0;john@vbox:/home[?2004h[john@vbox home]$ id
+[?2004luid=1001(john) gid=1001(john) groups=1001(john) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+]0;john@vbox:/home[?2004h[john@vbox home]$ sudo userdel john
+[?2004l
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+
+[sudo] password for john: 
+john is not in the sudoers file.  This incident will be reported.
+]0;john@vbox:/home[?2004h[john@vbox home]$ exit
+[?2004lexit
+]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ su johndo passwd john[K[K[K[K[K[K[K[K[K[K[Kuderdel john
+[?2004lsudo: uderdel: command not found
+]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ sudo uderdel john[1P[1@s
+[?2004l]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ cat /etc/passwd
+[?2004lroot:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:65534:65534:Kernel Overflow User:/:/sbin/nologin
+unbound:x:999:999:Unbound DNS resolver:/etc/unbound:/sbin/nologin
+systemd-coredump:x:998:996:systemd Core Dumper:/:/sbin/nologin
+dbus:x:81:81:System message bus:/:/sbin/nologin
+polkitd:x:997:995:User for polkitd:/:/sbin/nologin
+libstoragemgmt:x:996:992:daemon account for libstoragemgmt:/var/run/lsm:/sbin/nologin
+cockpit-ws:x:995:991:User for cockpit web service:/nonexisting:/sbin/nologin
+cockpit-wsinstance:x:994:990:User for cockpit-ws instances:/nonexisting:/sbin/nologin
+tss:x:59:59:Account used for TPM access:/dev/null:/sbin/nologin
+sssd:x:993:989:User for sssd:/:/sbin/nologin
+setroubleshoot:x:992:988::/var/lib/setroubleshoot:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/usr/share/empty.sshd:/sbin/nologin
+chrony:x:991:987::/var/lib/chrony:/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+systemd-oom:x:985:985:systemd Userspace OOM Killer:/:/usr/sbin/nologin
+systemd-resolve:x:984:984:systemd Resolver:/:/usr/sbin/nologin
+vagrant:x:1000:1000::/home/vagrant:/bin/bash
+vboxadd:x:983:1::/var/run/vboxadd:/bin/false
+]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ ls
+[?2004l[0m[01;34mjohn[0m  [01;34mvagrant[0m
+]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ rm use[K[K[K[K[K[Ksudo userdel -r john
+[?2004luserdel: user 'john' does not exist
+]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ rm -rf john/
+[?2004lrm: cannot remove 'john/': Permission denied
+]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ rm -rf john/[1@s[1@u[1@d[1@o[1@ 
+[?2004l]0;vagrant@vbox:/home[?2004h[vagrant@vbox home]$ exit
+[?2004lexit
+
+Script done on 2025-10-11 06:21:43+00:00 [COMMAND_EXIT_CODE="0"]

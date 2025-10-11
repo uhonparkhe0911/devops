@@ -1,0 +1,4 @@
+Create AWS ECR Repo ( Docker registry)
+Create IAM access user with ECT policy and store access keys in GitHub Secrets
+Create environment as well in GitHub Environments under Secrets
+Create Job to Build and Publish Docker Image into ECR

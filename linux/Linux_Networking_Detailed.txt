@@ -1,0 +1,193 @@
+
+# 🧠 Linux Networking — Detailed Guide
+
+This document covers Linux networking fundamentals, key protocols, important tools, commands, and systemd-based service management including `systemctl` and `systemd` concepts.
+
+---
+
+## 🌐 1. Networking Basics in Linux
+
+Linux systems rely on various network interfaces, configuration files, and background services to manage network communication.
+
+### Key Directories and Files
+- `/etc/network/interfaces` — Network configuration (Debian-based)
+- `/etc/sysconfig/network-scripts/ifcfg-*` — Network configs (RHEL-based)
+- `/etc/resolv.conf` — DNS resolver configuration
+- `/etc/hosts` — Static hostname resolution
+- `/etc/hostname` — System hostname
+- `/etc/netplan/` — Modern Ubuntu network configuration (YAML)
+
+---
+
+## 🔧 2. Networking Tools and Commands
+
+### 2.1 Interface & IP Management
+| Command | Description |
+|----------|--------------|
+| `ip a` | Show IP addresses |
+| `ip link` | Show all network interfaces |
+| `ip route` | Show routing table |
+| `ifconfig` | (Legacy) Display interface configuration |
+| `nmcli` | NetworkManager CLI tool |
+| `ethtool eth0` | Show interface hardware settings |
+| `ip link set eth0 up/down` | Enable or disable interface |
+
+---
+
+### 2.2 Connectivity & Troubleshooting
+| Command | Description |
+|----------|--------------|
+| `ping <host>` | Test connectivity using ICMP |
+| `traceroute <host>` | Show packet path to destination |
+| `mtr <host>` | Real-time traceroute + ping |
+| `curl <url>` | Test HTTP/HTTPS endpoints |
+| `wget <url>` | Download from web |
+| `telnet <host> <port>` | Test TCP port connectivity |
+| `nc -zv <host> <port>` | Netcat port test |
+| `dig <domain>` | DNS query tool |
+| `nslookup <domain>` | DNS resolution tool |
+| `arp -n` | View ARP table |
+
+---
+
+### 2.3 Routing & Firewall
+| Command | Description |
+|----------|--------------|
+| `route -n` | View routing table (legacy) |
+| `ip route add` | Add a new route |
+| `iptables -L` | View firewall rules |
+| `ufw status` | Simple firewall status (Ubuntu) |
+| `firewall-cmd --state` | Check firewalld status (RHEL/Fedora) |
+| `nmap <ip>` | Scan network ports |
+
+---
+
+### 2.4 Network Services
+| Command | Description |
+|----------|--------------|
+| `systemctl status NetworkManager` | View network manager service status |
+| `systemctl restart networking` | Restart network stack |
+| `systemctl status sshd` | View SSH daemon status |
+| `journalctl -u NetworkManager` | View logs for NetworkManager |
+
+---
+
+## 🧩 3. Network Protocols
+
+| Protocol | Purpose |
+|-----------|----------|
+| **IP** | Internet Protocol — addressing and routing |
+| **TCP** | Transmission Control Protocol — reliable, ordered communication |
+| **UDP** | User Datagram Protocol — fast, connectionless communication |
+| **ICMP** | Internet Control Message Protocol — diagnostics (ping) |
+| **DNS** | Domain Name System — name resolution |
+| **DHCP** | Dynamic Host Configuration Protocol — IP allocation |
+| **HTTP/HTTPS** | Web protocols |
+| **SSH** | Secure remote login |
+| **FTP/SFTP** | File transfer protocols |
+| **SNMP** | Network monitoring |
+| **NTP** | Network time synchronization |
+
+---
+
+## ⚙️ 4. systemctl — Managing Network Services (systemd)
+
+### 🔹 What is `systemctl`?
+`systemctl` is the main command-line tool used to control **systemd services**, daemons, and the overall system state.
+
+It replaces older service management commands like `service`, `init.d`, and `chkconfig`.
+
+### 🔹 Syntax
+```bash
+systemctl [command] [service_name]
+```
+
+### 🔹 Common Commands
+| Command | Description |
+|----------|--------------|
+| `systemctl status NetworkManager` | View network manager status |
+| `systemctl start NetworkManager` | Start the service |
+| `systemctl stop NetworkManager` | Stop the service |
+| `systemctl restart NetworkManager` | Restart service |
+| `systemctl enable NetworkManager` | Enable at boot |
+| `systemctl disable NetworkManager` | Disable autostart |
+| `systemctl list-units --type=service` | List all active services |
+| `systemctl is-active sshd` | Check if active |
+| `systemctl is-enabled sshd` | Check if enabled at boot |
+
+### 🔹 Logs and Debugging
+```bash
+journalctl -u NetworkManager
+journalctl -u ssh
+```
+
+### 🔹 Real Examples
+```bash
+sudo systemctl restart networking
+sudo systemctl enable NetworkManager
+sudo systemctl status sshd
+sudo systemctl restart firewalld
+```
+
+---
+
+## 🧱 5. What is systemd?
+
+### 🔹 Definition
+`systemd` is a **system and service manager** for Linux. It’s the first process (`PID 1`) that starts after boot and is responsible for initializing and managing system services and daemons.
+
+### 🔹 Responsibilities
+- Boot and shutdown process control  
+- Managing system services and daemons  
+- Logging (via `journald`)  
+- Device and mount management  
+- Networking (via `NetworkManager`, `systemd-networkd`)  
+
+### 🔹 Service Units
+A **unit** is a configuration file describing a service, socket, mount, or target. Units are stored in:
+```
+/etc/systemd/system/
+/usr/lib/systemd/system/
+```
+
+### 🔹 Example Unit File
+```ini
+[Unit]
+Description=Custom Web Server
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 8080
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start it:
+```bash
+sudo systemctl enable myweb.service
+sudo systemctl start myweb.service
+```
+
+---
+
+## 🧰 6. Real-World Use Cases
+
+| Situation | Command |
+|------------|-----------|
+| Restart SSH service after config edit | `sudo systemctl restart sshd` |
+| Enable firewall permanently | `sudo systemctl enable firewalld` |
+| Debug networking issues | `sudo journalctl -xeu NetworkManager` |
+| Restart all network daemons | `sudo systemctl restart NetworkManager` |
+| Reload all units | `sudo systemctl daemon-reload` |
+
+---
+
+## ✅ Summary
+
+- `systemctl` controls **services**, **network daemons**, and **system state**.  
+- `systemd` is the **init system** that manages these services.  
+- Networking tools like `ip`, `nmcli`, `ping`, and `netstat` provide diagnostics and configuration.  
+- Protocols like TCP/IP, DNS, DHCP, and ICMP form the core of Linux networking.
+
+---

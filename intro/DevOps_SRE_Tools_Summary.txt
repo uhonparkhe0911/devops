@@ -1,0 +1,166 @@
+DevOps + SRE Tools Summary (Comprehensive Overview)
+------------------------------------------------------------
+
+1. VERSION CONTROL & COLLABORATION
+------------------------------------------------------------
+Tools:
+- Git, GitHub, GitLab, Bitbucket
+- Jira, Confluence, Notion (for documentation)
+- GitHub Wiki, GitLab Merge Requests, Gerrit
+
+Purpose:
+Manage code, documentation, and collaboration between Dev and Ops teams.
+
+------------------------------------------------------------
+2. CI/CD PIPELINES
+------------------------------------------------------------
+Tools:
+- Jenkins, GitHub Actions, GitLab CI, CircleCI, Travis CI
+- Maven, Gradle, Ant (Build Tools)
+- Groovy (used for Jenkins Pipelines)
+- YAML (used for workflow definitions in CI/CD tools)
+- ArgoCD (for GitOps-based Continuous Delivery)
+- JFrog Artifactory (Artifact repository management)
+
+Purpose:
+Automate build, test, and deployment pipelines for faster, reliable releases.
+
+------------------------------------------------------------
+3. CONTAINERIZATION & ORCHESTRATION
+------------------------------------------------------------
+Tools:
+- Docker, Podman
+- Kubernetes, OpenShift, Amazon EKS, Google GKE
+- Istio (Service Mesh)
+- ArgoCD (GitOps-based deployment automation)
+- Helm, Kustomize
+
+Purpose:
+Containerize applications and orchestrate their deployment in scalable clusters.
+
+------------------------------------------------------------
+4. INFRASTRUCTURE AS CODE (IaC)
+------------------------------------------------------------
+Tools:
+- Terraform, Pulumi, AWS CloudFormation
+- Ansible, Chef, Puppet
+- YAML (for IaC configuration)
+- HashiCorp Vault, AWS Secrets Manager (Secrets Management)
+
+Purpose:
+Define, manage, and automate infrastructure provisioning using code.
+
+------------------------------------------------------------
+5. MONITORING, LOGGING, AND OBSERVABILITY
+------------------------------------------------------------
+Tools:
+- Prometheus, Grafana, Datadog
+- ELK Stack (Elasticsearch, Logstash, Kibana)
+- Jaeger (Distributed Tracing)
+- Loki, Fluentd, CloudWatch Logs
+- Alertmanager, PagerDuty, Opsgenie
+
+Purpose:
+Collect metrics, logs, and traces to observe system health and performance.
+
+------------------------------------------------------------
+6. RELIABILITY ENGINEERING (SRE FOCUS)
+------------------------------------------------------------
+Tools:
+- SLIs, SLOs, Error Budgets (Reliability metrics)
+- Jaeger, Zipkin (Tracing)
+- PagerDuty, VictorOps (Incident response)
+- Chaos Engineering: LitmusChaos, Gremlin
+- Load Testing: JMeter, k6, Locust
+
+Purpose:
+Ensure high availability, reliability, and performance through engineering and automation.
+
+------------------------------------------------------------
+7. SECURITY, COMPLIANCE & SCANNING
+------------------------------------------------------------
+Tools:
+- Trivy, Anchore, Clair, Aqua
+- Snyk, OWASP Dependency-Check
+- GitGuardian, Gitleaks (Secret Scanning)
+- JFrog Xray (Artifact Security)
+- Open Policy Agent (OPA)
+
+Purpose:
+Perform vulnerability scanning, secret management, and policy enforcement.
+
+------------------------------------------------------------
+8. SCRIPTING & AUTOMATION
+------------------------------------------------------------
+Tools:
+- Shell Scripting (Bash, Zsh)
+- Vi / Vim (Code Editing)
+- Python, Go, Java (Automation and scripting languages)
+- AI Agents (Automated analysis, prediction, anomaly detection)
+- Limp (Automation framework / scripting utility if used internally)
+
+Purpose:
+Automate manual processes, enhance CI/CD pipelines, and manage configurations efficiently.
+
+------------------------------------------------------------
+9. CLOUD SERVICES
+------------------------------------------------------------
+Providers:
+- AWS (EC2, S3, Lambda, EKS, CloudWatch)
+- Azure (VMs, AKS, Monitor)
+- Google Cloud (GKE, Compute Engine, Stackdriver)
+
+Purpose:
+Host applications, services, and infrastructure in scalable environments.
+
+------------------------------------------------------------
+10. ARTIFACT MANAGEMENT
+------------------------------------------------------------
+Tools:
+- JFrog Artifactory, Nexus Repository, AWS CodeArtifact
+
+Purpose:
+Store, version, and distribute build artifacts (WAR, JAR, Docker images).
+
+------------------------------------------------------------
+11. COMMUNICATION & COLLABORATION
+------------------------------------------------------------
+Tools:
+- Slack, Microsoft Teams, Mattermost (ChatOps)
+- Hubot, Opsdroid (Automation bots)
+- Zoom, Google Meet (Incident war rooms)
+
+Purpose:
+Enable fast communication during incidents, deployments, and planning.
+
+------------------------------------------------------------
+12. ADDITIONAL MODERN TOOLS & CONCEPTS
+------------------------------------------------------------
+- AI Agents (for automated analysis and proactive alerting)
+- ArgoCD (Declarative GitOps deployment management)
+- YAML (Configuration and workflow definition standard)
+- Groovy (Jenkins Pipeline Scripting)
+- Vi Editor (Command-line editing and coding)
+- Java (Core backend language for enterprise automation)
+- Limp (Custom or internal automation framework)
+- Istio (Service Mesh for traffic management and observability)
+
+------------------------------------------------------------
+SUMMARY TABLE
+------------------------------------------------------------
+| Category | Core Tools |
+|-----------|-------------|
+| Version Control | Git, GitHub |
+| CI/CD | Jenkins, GitHub Actions, Maven, Groovy, YAML |
+| Artifacts | JFrog Artifactory |
+| Containers | Docker, Kubernetes, Istio, ArgoCD |
+| IaC | Terraform, Ansible |
+| Observability | Prometheus, Grafana, Jaeger |
+| Security | Trivy, Snyk |
+| Scripting | Shell, Python, Java |
+| Cloud | AWS / GCP / Azure |
+| AI Ops | AI Agents, Predictive Monitoring |
+| Editor | Vi / Vim |
+
+------------------------------------------------------------
+END OF FILE

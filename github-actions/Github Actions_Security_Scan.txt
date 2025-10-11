@@ -1,0 +1,46 @@
+GITHUB ACTIONS - SECURITY SCANNING
+================================
+
+1. Code Scanning (CodeQL)
+-------------------------
+Scan code for vulnerabilities:
+
+name: CodeQL Analysis
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * 1'  # weekly scan
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'python' ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+      - uses: github/codeql-action/analyze@v3
+
+2. Dependency Review
+--------------------
+Detect vulnerable dependencies in PRs:
+- name: Dependency Review
+  uses: actions/dependency-review-action@v4
+
+3. Secret Scanning
+-----------------
+Detect exposed secrets in code. Integrate third-party scanners:
+- Trivy
+- Snyk
+- Grype

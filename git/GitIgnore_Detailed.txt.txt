@@ -1,0 +1,186 @@
+Git Ignore — Detailed Explanation
+
+The .gitignore file tells Git which files and folders to ignore when committing code. 
+It prevents unnecessary, temporary, or sensitive files from being tracked by Git.
+
+------------------------------------------------------------
+Purpose of .gitignore
+------------------------------------------------------------
+
+- Exclude files not relevant to source control (e.g., logs, caches, build artifacts)
+- Avoid committing sensitive information (e.g., .env files)
+- Keep repositories clean and lightweight
+
+------------------------------------------------------------
+Typical Location
+------------------------------------------------------------
+
+Usually placed at the root of your repository:
+
+project-root/
+├── .gitignore
+├── src/
+├── README.md
+└── package.json
+
+You can also create .gitignore files in subdirectories for directory-specific rules.
+
+------------------------------------------------------------
+How It Works
+------------------------------------------------------------
+
+When you run:
+git add .
+
+Git checks the .gitignore file and skips matching patterns.
+
+Important:
+- .gitignore works only for untracked files.
+- If a file is already tracked, you must untrack it manually.
+
+Example:
+git rm --cached <file>
+
+------------------------------------------------------------
+Example .gitignore Files
+------------------------------------------------------------
+
+Python Projects
+----------------
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+env/
+
+# Logs
+*.log
+*.tmp
+
+# IDE settings
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.*
+
+# Build outputs
+build/
+dist/
+*.egg-info/
+
+
+Node.js Projects
+----------------
+# Node modules
+node_modules/
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment files
+.env
+
+# Build outputs
+dist/
+coverage/
+
+# IDE/editor files
+.vscode/
+.idea/
+
+
+Java / Maven Projects
+----------------------
+# Build directories
+target/
+build/
+
+# IDE files
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# OS-specific files
+.DS_Store
+
+# Environment / credentials
+.env
+application.properties
+application.yml
+
+------------------------------------------------------------
+Useful Commands
+------------------------------------------------------------
+
+git status --ignored         -> Show ignored files
+git rm --cached <file>       -> Untrack an already committed file
+git add .                    -> Add all files (except ignored ones)
+git config --global core.excludesfile ~/.gitignore_global  -> Set global ignore file
+
+------------------------------------------------------------
+Global Git Ignore
+------------------------------------------------------------
+
+To set a global ignore for all repositories:
+
+git config --global core.excludesfile ~/.gitignore_global
+
+Then edit ~/.gitignore_global:
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Editor swap files
+*.swp
+*.swo
+
+------------------------------------------------------------
+Important Notes
+------------------------------------------------------------
+
+.gitignore affects only untracked files.  
+If you’ve already committed something, you need to remove it from the index first.
+
+Example:
+git rm --cached .env
+echo ".env" >> .gitignore
+git commit -m "Stop tracking .env file"
+
+------------------------------------------------------------
+Summary
+------------------------------------------------------------
+
+Concept              | Description
+----------------------|-------------------------------------
+.gitignore            | File that defines patterns of files Git should ignore
+Location              | Usually in repo root
+Scope                 | Can be project-specific or global
+Affects               | Only untracked files
+Command to test ignored files | git status --ignored
+
+------------------------------------------------------------
+Best Practices
+------------------------------------------------------------
+
+- Always include .gitignore before the first commit
+- Use language-specific templates (GitHub provides them: https://github.com/github/gitignore)
+- Never rely on .gitignore to hide secrets already committed — remove them and rotate credentials
+
+------------------------------------------------------------
+End of Document
+------------------------------------------------------------

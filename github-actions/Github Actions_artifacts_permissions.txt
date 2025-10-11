@@ -1,0 +1,34 @@
+GITHUB ACTIONS - ARTIFACTS, CONDITIONS, AND PERMISSIONS
+======================================================
+
+1. Artifacts
+------------
+Artifacts are files generated during workflow execution.
+
+Upload artifacts:
+- name: Upload Build Output
+  uses: actions/upload-artifact@v4
+  with:
+    name: build-artifact
+    path: dist/
+
+Download artifacts:
+- name: Download Build
+  uses: actions/download-artifact@v4
+  with:
+    name: build-artifact
+
+2. Conditional Execution
+------------------------
+Control execution with `if:` keyword:
+if: github.ref == 'refs/heads/main'
+if: ${{ success() && github.event_name == 'push' }}
+if: contains(github.actor, 'admin')
+
+3. Repository Permissions
+-------------------------
+Minimize GITHUB_TOKEN permissions:
+permissions:
+  contents: read
+  packages: write
+  deployments: write

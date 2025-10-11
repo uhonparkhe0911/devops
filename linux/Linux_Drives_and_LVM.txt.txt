@@ -1,0 +1,69 @@
+Linux Drives and Logical Volumes - Summary
+------------------------------------------------------------
+
+1. Physical Drives
+------------------------------------------------------------
+- HDD / SSD: Physical disks (e.g., /dev/sda, /dev/nvme0n1)
+- Partitions: Subsections of a disk (e.g., /dev/sda1, /dev/sda2)
+- Removable Media: USB drives, CD-ROMs, usually mounted under /media
+
+2. Mount Points
+------------------------------------------------------------
+- Linux uses a single-rooted tree (/)
+- Drives or partitions are mounted to directories:
+  - /mnt/data: temporary mount
+  - /media/usb: removable media
+  - /home: user directories
+
+Commands:
+- mount: show or mount devices
+- umount: unmount a device
+
+3. Filesystems
+------------------------------------------------------------
+| Filesystem | Description |
+|------------|------------|
+| ext4       | Most common, journaling filesystem |
+| xfs        | High-performance, scalable filesystem |
+| btrfs      | Modern, supports snapshots and compression |
+| vfat / ntfs| Compatible with Windows external drives |
+| swap       | Swap partition for virtual memory |
+
+Commands:
+- df -h       : Disk usage of mounted filesystems
+- du -sh <dir>: Size of directory
+- lsblk       : List block devices
+- blkid       : UUID and filesystem type
+
+4. Logical Volumes (LVM)
+------------------------------------------------------------
+- LVM allows flexible storage management above physical disks
+
+Components:
+- PV (Physical Volume): a disk or partition
+- VG (Volume Group): pool of storage from PVs
+- LV (Logical Volume): partition created from VG, behaves like normal partition
+
+Benefits:
+- Resize partitions dynamically
+- Snapshots for backups
+- Combine multiple disks into one logical volume
+
+Commands:
+- pvdisplay          : Show physical volumes
+- vgdisplay          : Show volume groups
+- lvdisplay          : Show logical volumes
+- lvcreate, lvextend, lvreduce : Manage LVs
+
+5. Summary Table
+------------------------------------------------------------
+| Category         | Key Points |
+|-----------------|------------|
+| Physical Drives  | HDD / SSD, partitions, removable media |
+| Mount Points     | Directories where drives/partitions are attached (/mnt, /media, /home) |
+| Filesystems      | ext4, xfs, btrfs, swap, vfat/ntfs |
+| Logical Volumes  | PV, VG, LV; flexible resizing, snapshots; pvdisplay, vgdisplay, lvdisplay |
+| Commands         | df, du, lsblk, mount, umount, blkid |
+
+------------------------------------------------------------
+END OF FILE

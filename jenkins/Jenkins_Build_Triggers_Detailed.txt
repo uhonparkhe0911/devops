@@ -1,0 +1,130 @@
+JENKINS BUILD TRIGGERS - DETAILED OVERVIEW
+
+-----------------------------------
+1. What Are Build Triggers?
+-----------------------------------
+Build triggers define how and when Jenkins starts a job or pipeline automatically.
+Triggers can come from:
+- Jenkins (scheduled)
+- SCM (Git, GitHub, Bitbucket)
+- External systems (via webhooks)
+- Other Jenkins jobs
+- Manual or REST API calls
+
+-----------------------------------
+2. Types of Build Triggers
+-----------------------------------
+
+A. Scheduled (CRON) Trigger
+---------------------------
+Example (Declarative Pipeline):
+pipeline {
+  triggers {
+    cron('H 2 * * 1-5')
+  }
+}
+=> Runs job every weekday at a random minute in the 2 AM hour.
+
+B. SCM Polling
+---------------
+Example:
+pipeline {
+  triggers {
+    pollSCM('H/15 * * * *')
+  }
+}
+=> Polls Git repo every 15 minutes for changes.
+
+C. Webhooks (GitHub, Bitbucket)
+-------------------------------
+- GitHub: Enable 'GitHub hook trigger for GITScm polling'
+- Repo → Settings → Webhooks → Add webhook:
+  URL: https://<jenkins_url>/github-webhook/
+
+Declarative Example:
+pipeline {
+  triggers {
+    githubPush()
+  }
+}
+
+D. Upstream/Downstream Job Triggers
+-----------------------------------
+Triggered when another Jenkins job completes.
+Example:
+pipeline {
+  triggers {
+    upstream(upstreamProjects: 'CompileJob', threshold: hudson.model.Result.SUCCESS)
+  }
+}
+
+E. Manual or Parameterized Triggers
+-----------------------------------
+Triggered manually or using 'Build with Parameters'.
+
+parameters {
+  string(name: 'ENV', defaultValue: 'dev', description: 'Environment')
+}
+
+F. Remote Triggers via REST API
+-------------------------------
+Triggered externally via API:
+curl -X POST https://jenkins.example.com/job/MyJob/build --user "user:apitoken"
+
+With parameters:
+curl -X POST "https://jenkins.example.com/job/MyJob/buildWithParameters?ENV=prod" --user "user:apitoken"
+
+G. External Plugin Triggers
+---------------------------
+Examples:
+- Slack or Mattermost
+- Generic Webhook Trigger Plugin
+- Multibranch Pipeline Plugin
+
+H. Multi-Branch or PR Triggers
+-------------------------------
+Automatically trigger builds for new branches or pull requests.
+
+-----------------------------------
+3. Combining Triggers
+-----------------------------------
+You can combine multiple triggers:
+pipeline {
+  triggers {
+    cron('H 3 * * *')
+    githubPush()
+  }
+}
+
+-----------------------------------
+4. Conditional Triggers
+-----------------------------------
+Triggers can depend on environment variables:
+if (env.NIGHTLY_BUILD == "true") {
+  triggers {
+    cron('H 1 * * *')
+  }
+}
+
+-----------------------------------
+5. Security Notes
+-----------------------------------
+- Use API tokens, not passwords
+- Protect remote triggers with CSRF tokens
+- Restrict job permissions
+
+-----------------------------------
+6. Summary Table
+-----------------------------------
+| Trigger Type | Mechanism | Example Use Case |
+|---------------|------------|------------------|
+| cron | Time-based | Nightly builds |
+| pollSCM | Check repo | Legacy repos |
+| githubPush() | Event-based | GitHub pushes |
+| upstream() | Dependency | Trigger after another job |
+| remote | REST API | External triggers |
+| manual | User action | On-demand builds |
+
+-----------------------------------
+END OF DOCUMENT
+-----------------------------------

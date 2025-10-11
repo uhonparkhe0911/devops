@@ -1,0 +1,37 @@
+📘 Maven – Group ID, Artifact ID, and Version
+
+🧩 1. Group ID
+- Uniquely identifies your organization or project.
+- Follows reverse domain naming convention (to ensure uniqueness).
+- Example:
+  <groupId>com.example.project</groupId>
+- Think of it like a Java package name.
+
+⚙️ 2. Artifact ID
+- The name of your project or module.
+- It becomes the base name of the generated JAR/WAR file.
+- Example:
+  <artifactId>user-service</artifactId>
+- Together with the groupId, it forms a unique combination.
+
+🔢 3. Version
+- Specifies the version of the artifact.
+- Example:
+  <version>1.0.0</version>
+- Can be of two types:
+  - SNAPSHOT version: Under development (e.g., 1.0.0-SNAPSHOT)
+  - Release version: Stable, production-ready (e.g., 1.0.0)
+
+✅ Combined Unique Identifier
+Each Maven artifact is uniquely identified using:
+  groupId:artifactId:version
+
+Example:
+  com.example.project:user-service:1.0.0
+
+💡 Summary
+| Element     | Purpose                        | Example                |
+|--------------|--------------------------------|------------------------|
+| groupId     | Identifies organization/project | com.example.project    |
+| artifactId  | Identifies specific module      | user-service           |
+| version     | Identifies release version      | 1.0.0                  |

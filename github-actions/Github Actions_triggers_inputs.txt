@@ -1,0 +1,45 @@
+GITHUB ACTIONS - TRIGGERS AND INPUTS
+=======================================
+
+1. Triggers Overview
+-------------------
+GitHub Actions workflows start when specific events occur in your repository.
+
+Common events:
+- push — triggers on git push
+- pull_request — triggers when PRs are opened, synchronized, or merged
+- workflow_dispatch — manual trigger
+- repository_dispatch — external system trigger via API
+- schedule — CRON-based trigger
+- release — runs on release creation or publication
+- issue_comment, fork, etc.
+
+Example YAML:
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy (dev/stage/prod)'
+        required: true
+        default: 'dev'
+
+2. Using Inputs in Workflow
+---------------------------
+Access inputs in jobs:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploying to ${{ github.event.inputs.environment }}"
+
+3. External Trigger via Repository Dispatch
+-------------------------------------------
+curl -X POST -H "Authorization: token <GH_TOKEN>" \
+  -H "Accept: application/vnd.github.v3+json" \
+  https://api.github.com/repos/<user>/<repo>/dispatches \
+  -d '{"event_type":"trigger-ci"}'

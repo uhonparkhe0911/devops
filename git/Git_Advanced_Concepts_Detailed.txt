@@ -1,0 +1,206 @@
+
+=============================
+ GIT REBASE, RESET, REVERT, PULL --REBASE, STASH & MERGE CONFLICT HANDLING
+=============================
+
+--------------------------------------------
+1. GIT REBASE
+--------------------------------------------
+Purpose:
+Reapply commits on top of another branch, typically used to integrate changes from main (or master) branch into your feature branch.
+
+Command:
+    git checkout feature
+    git rebase main
+
+Explanation:
+This takes commits from 'main' first, then replays your feature commits on top of it.
+
+Before rebase:
+main:    A --- B --- C
+               \
+feature:         D --- E
+
+After rebase:
+main:    A --- B --- C
+                      \
+feature:                D' --- E'
+
+Your feature commits (D and E) are reapplied after main's latest commit (C).
+Rebase makes history linear and clean.
+
+Common Options:
+    git rebase --continue     # after fixing merge conflicts
+    git rebase --abort        # to cancel ongoing rebase
+    git rebase --skip         # skip current conflicting commit
+
+Key Rule:
+Always rebase your feature branch onto main, not the other way around.
+
+--------------------------------------------
+2. GIT RESET
+--------------------------------------------
+Used to move the HEAD pointer to a specific commit and modify staging/working area.
+
+Syntax:
+    git reset [--soft | --mixed | --hard] <commit>
+
+Types:
+    --soft   → Keeps changes staged (undo commit only)
+    --mixed  → Keeps changes unstaged (default)
+    --hard   → Discards all changes
+
+Example:
+    git reset --soft HEAD~1
+    # Moves HEAD one commit back but keeps changes staged.
+
+Use Case:
+Undo last commit but keep all your changes ready to recommit.
+
+--------------------------------------------
+3. GIT REVERT
+--------------------------------------------
+Safely undo a commit by creating a new commit that reverses its changes.
+This keeps history intact (important for shared branches).
+
+Command:
+    git revert <commit-hash>
+
+Example:
+    git revert a1b2c3d
+Creates a new commit that undoes changes from commit a1b2c3d.
+
+Difference from reset:
+- reset rewrites history (don’t use on shared branches)
+- revert adds a new commit (safe for shared branches)
+
+--------------------------------------------
+4. GIT PULL --REBASE
+--------------------------------------------
+Combines fetching latest changes and rebasing your local commits on top.
+
+Command:
+    git pull --rebase origin main
+
+Meaning:
+Instead of merging remote main into your branch, it fetches main’s commits and rebases your local commits after them.
+
+Result:
+Cleaner, linear history.
+
+--------------------------------------------
+5. GIT STASH
+--------------------------------------------
+Temporarily stores uncommitted changes (both staged and unstaged) to get a clean working directory.
+
+Command:
+    git stash
+
+Use Case:
+You’re in the middle of work but need to switch branches quickly.
+
+Example Workflow:
+    # Make changes
+    git add file1.py
+    git stash                # save your changes
+    git checkout main        # switch branch safely
+
+List stashes:
+    git stash list
+
+Apply latest stash and keep it in stash list:
+    git stash apply
+
+Apply and remove stash from list:
+    git stash pop
+
+Apply specific stash:
+    git stash apply stash@{2}
+
+Drop a specific stash:
+    git stash drop stash@{1}
+
+Clear all stashes:
+    git stash clear
+
+Save stash with custom message:
+    git stash push -m "WIP on feature: fixing bug"
+
+Include untracked files too:
+    git stash -u
+
+--------------------------------------------
+6. HANDLING MERGE CONFLICTS IN PR
+--------------------------------------------
+When multiple people modify the same lines or files, Git can’t auto-merge and raises a conflict.
+
+Typical Scenario:
+    You rebase or merge your branch into main and conflicts arise.
+
+Steps to Resolve:
+1. Identify conflicts:
+       git status
+   You’ll see files marked as ‘both modified’.
+
+2. Open conflicted files:
+   Look for markers:
+       <<<<<<< HEAD
+       your changes
+       =======
+       incoming changes
+       >>>>>>> branch_name
+
+3. Manually edit to keep the correct code.
+
+4. Stage resolved files:
+       git add <filename>
+
+5. Continue rebase or merge:
+       git rebase --continue
+   or
+       git commit   # for merge case
+
+6. Verify final status:
+       git status
+
+--------------------------------------------
+7. QUICK SUMMARY TABLE
+--------------------------------------------
+| Command               | Purpose / Behavior                                    | Keeps Staged | Keeps Working Dir | Safe for Shared Branch? |
+|-----------------------|--------------------------------------------------------|--------------|------------------|--------------------------|
+| git rebase main       | Replay your commits on top of main                    | ✅ Yes        | ✅ Yes            | ⚠️ Only your branch      |
+| git reset --soft      | Undo commit but keep staged changes                   | ✅ Yes        | ✅ Yes            | ❌ No                   |
+| git reset --mixed     | Undo commit and unstage changes                       | ❌ No         | ✅ Yes            | ❌ No                   |
+| git reset --hard      | Undo commit and delete all changes                    | ❌ No         | ❌ No             | ❌ No                   |
+| git revert <commit>   | Create new commit that undoes changes                 | ✅ Yes        | ✅ Yes            | ✅ Yes                  |
+| git pull --rebase     | Rebase local commits after pulling remote changes     | ✅ Yes        | ✅ Yes            | ✅ Yes                  |
+| git stash             | Temporarily save changes                              | ✅ Yes        | ✅ Yes            | ✅ Yes                  |
+
+--------------------------------------------
+8. REAL-TIME DEV SCENARIOS
+--------------------------------------------
+✅ Undo wrong commit but keep your edits:
+    git reset --soft HEAD~1
+
+✅ Fix conflict during rebase:
+    git rebase main
+    # fix conflicts
+    git add .
+    git rebase --continue
+
+✅ Safely undo commit already pushed to shared branch:
+    git revert <commit-hash>
+
+✅ Quickly save uncommitted changes and switch branch:
+    git stash
+    git checkout main
+
+✅ Retrieve stashed work later:
+    git stash pop
+
+✅ Keep your branch up to date with main cleanly:
+    git pull --rebase origin main
+
+--------------------------------------------
+This document covers the most important Git operations used in real-world DevOps and software development workflows.
+--------------------------------------------
