@@ -1,0 +1,134 @@
+🐳 Docker Networking – Complete Guide
+
+🌐 1. What is Docker Networking?
+Docker networking allows containers to communicate with each other, the host system, and the outside world.
+Each container gets its own virtual network interface (veth) and IP address, managed by Docker’s networking subsystem.
+
+------------------------------------------------------
+
+⚙️ 2. Docker Network Drivers (Types of Networks)
+
+a) Bridge (default)
+- Default for standalone containers.
+- Containers on the same bridge network can communicate using their container name.
+Example:
+  docker run -d --name app1 --network bridge nginx
+  docker run -d --name app2 --network bridge alpine sleep 3600
+  docker exec -it app2 ping app1
+
+b) Host
+- Removes isolation between container and host.
+- Shares host’s IP and ports.
+Example:
+  docker run -d --network host nginx
+
+c) None
+- Fully isolates the container from any network.
+Example:
+  docker run -d --network none nginx
+
+d) Overlay
+- Used in Docker Swarm or multi-host environments.
+Example:
+  docker swarm init
+  docker network create -d overlay my_overlay_net
+  docker service create --name webapp --network my_overlay_net nginx
+
+e) Macvlan
+- Assigns unique MAC and IP, appearing as a physical device on LAN.
+Example:
+  docker network create -d macvlan --subnet=192.168.1.0/24 --gateway=192.168.1.1 -o parent=eth0 my_macvlan
+  docker run -d --name web --network my_macvlan nginx
+
+f) Custom Bridge
+- Custom bridge networks allow DNS-based name resolution.
+Example:
+  docker network create my_bridge
+  docker run -d --name backend --network my_bridge nginx
+  docker run -d --name frontend --network my_bridge alpine sleep 3600
+  docker exec -it frontend ping backend
+
+------------------------------------------------------
+
+🔍 3. Common Docker Network Commands
+
+| Command | Description |
+|----------|--------------|
+| docker network ls | List all networks |
+| docker network inspect <network> | Show details of a network |
+| docker network create <name> | Create new network |
+| docker network rm <name> | Remove a network |
+| docker network connect <network> <container> | Connect container to network |
+| docker network disconnect <network> <container> | Disconnect container from network |
+
+------------------------------------------------------
+
+🧠 4. Inspecting Networks
+Example:
+  docker network inspect bridge
+
+Shows subnet, gateway, connected containers, and their IPs.
+
+------------------------------------------------------
+
+🧩 5. Container Communication Scenarios
+
+| Scenario | Example |
+|-----------|----------|
+| Same network | Containers can ping each other by name |
+| Different networks | Containers cannot communicate unless linked |
+| Across hosts | Use overlay networks |
+| External access | Expose ports using -p or --publish |
+
+------------------------------------------------------
+
+🌍 6. Port Mapping (Exposing Services)
+Expose internal container port to host:
+  docker run -d -p 8080:80 nginx
+Now accessible via http://localhost:8080
+
+------------------------------------------------------
+
+🔒 7. Docker DNS Service
+Docker provides internal DNS for container name resolution.
+Example:
+  docker run -d --name db --network my_bridge mysql
+  docker run -d --name app --network my_bridge nginx
+  docker exec -it app ping db
+
+------------------------------------------------------
+
+🧱 8. Connecting Existing Containers
+Connect to multiple networks:
+  docker network connect my_bridge app1
+  docker network connect another_net app1
+
+------------------------------------------------------
+
+🧰 9. Real-World Example
+Create a web + database app network:
+  docker network create app_net
+  docker run -d --name db --network app_net -e MYSQL_ROOT_PASSWORD=pass mysql:5.7
+  docker run -d --name web --network app_net -p 8080:80 nginx
+
+Result:
+- Both share same network.
+- Web connects to DB via name “db”.
+- Access Nginx at localhost:8080.
+
+------------------------------------------------------
+
+⚙️ 10. Summary
+
+| Network Type | Use Case | Communication Scope |
+|---------------|-----------|----------------------|
+| bridge | Default single-host | Local containers |
+| host | Full host access | Shared with host |
+| none | Full isolation | None |
+| overlay | Multi-host, Swarm | Across hosts |
+| macvlan | Direct LAN access | External network |
+| custom bridge | User-defined local networks | Name-based communication |
+
+------------------------------------------------------
+
+✅ End of Docker Networking Guide

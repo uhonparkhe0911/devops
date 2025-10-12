@@ -1,0 +1,143 @@
+⚙️ Jenkins Build Parameters — Complete Guide
+
+🧩 What are Build Parameters?
+Build Parameters in Jenkins allow you to customize a build at runtime by providing user input before the build starts.
+They make Jenkins jobs dynamic, flexible, and reusable.
+
+Why Use Build Parameters?
+- Reuse the same job for multiple environments (dev, staging, prod)
+- Control deployment behavior dynamically (version, branch, etc.)
+- Enable manual input in CI/CD pipelines
+- Pass variables into scripts or Docker builds
+
+------------------------------------------------------
+
+Adding Parameters (Freestyle Jobs)
+1. Open Jenkins job → Configure
+2. Check ✅ “This project is parameterized”
+3. Click “Add Parameter” → Choose type (String, Boolean, Choice, etc.)
+4. Save
+5. Click “Build with Parameters” to see input fields
+
+------------------------------------------------------
+
+Adding Parameters (Pipeline Script)
+
+pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Git branch to build')
+        choice(name: 'ENV', choices: ['dev', 'staging', 'prod'], description: 'Select environment')
+        booleanParam(name: 'DEPLOY', defaultValue: true, description: 'Trigger deployment after build')
+    }
+    stages {
+        stage('Build Info') {
+            steps {
+                echo "Branch: ${params.BRANCH_NAME}"
+                echo "Environment: ${params.ENV}"
+                echo "Deploy: ${params.DEPLOY}"
+            }
+        }
+    }
+}
+
+------------------------------------------------------
+
+Common Types of Parameters
+
+| Parameter Type | Description | Example Usage |
+|----------------|-------------|---------------|
+| String Parameter | Single line text input | Branch name, version number |
+| Choice Parameter | Select from predefined options | dev, staging, prod |
+| Boolean Parameter | Checkbox true/false | Deploy yes/no |
+| Password Parameter | Hidden input | Passwords, tokens |
+| File Parameter | Upload a file to workspace | Config file, dataset |
+| Run Parameter | Pick another Jenkins build | Build dependencies |
+| Text Parameter | Multi-line text input | Configurations, JSON, YAML |
+
+------------------------------------------------------
+
+Example: Using Parameters in Shell Scripts
+
+pipeline {
+    agent any
+    parameters {
+        string(name: 'VERSION', defaultValue: '1.0.0', description: 'App version')
+    }
+    stages {
+        stage('Build') {
+            steps {
+                sh '''
+echo "Building version: ${VERSION}"
+docker build -t myapp:${VERSION} .
+'''
+            }
+        }
+    }
+}
+
+------------------------------------------------------
+
+Example: Choice Parameter for Environments
+
+parameters {
+    choice(name: 'ENVIRONMENT', choices: ['dev', 'qa', 'prod'], description: 'Deployment target')
+}
+
+stages {
+    stage('Deploy') {
+        steps {
+            sh "echo Deploying to ${params.ENVIRONMENT}"
+        }
+    }
+}
+
+------------------------------------------------------
+
+Example: Password Parameter
+
+parameters {
+    password(name: 'SECRET_KEY', defaultValue: '', description: 'Enter secret key')
+}
+
+stages {
+    stage('Use Secret') {
+        steps {
+            sh "echo 'Using secret key safely...'"
+        }
+    }
+}
+
+------------------------------------------------------
+
+Use Cases
+
+| Use Case | Parameter Example |
+|----------|------------------|
+| Deploy different environments | Choice parameter (dev/staging/prod) |
+| Trigger specific branch build | String parameter (branch_name) |
+| Toggle deployment stage | Boolean parameter |
+| Pass version tag for Docker | String parameter (version) |
+| Supply secret or token | Password parameter |
+
+------------------------------------------------------
+
+Pro Tips
+- Use params.<parameterName> to access values
+- Combine with when conditions for conditional execution
+  when { expression { params.DEPLOY == true } }
+- Trigger parameterized builds from other jobs:
+  build job: 'deploy-job', parameters: [string(name: 'VERSION', value: '2.1')]
+- Keep default values for faster testing
+
+------------------------------------------------------
+
+Summary Table
+
+| Feature | Description |
+|---------|-------------|
+| Enables dynamic builds | Users enter input before build |
+| Defined in | Freestyle → Configure; Pipeline → parameters {} block |
+| Access syntax | ${params.PARAM_NAME} |
+| Common types | String, Choice, Boolean, Password, File, Run |
+| Best practice | Use descriptive names and default values |

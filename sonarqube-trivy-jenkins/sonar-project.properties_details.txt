@@ -1,0 +1,87 @@
+SONAR-PROJECT.PROPERTIES DETAILS
+
+1. PURPOSE:
+- Defines project-level analysis configuration for SonarQube.
+- Tells SonarQube which project is being scanned, where the source code resides, and what to include/exclude.
+- Used by Jenkins or the Sonar Scanner CLI during code quality analysis.
+
+2. LOCATION:
+- Place this file in the root directory of your source code repository.
+  Example structure:
+  my-app/
+    ├── src/
+    ├── pom.xml
+    └── sonar-project.properties
+
+3. COMMON PROPERTIES:
+
+| Property | Purpose | Example |
+|-----------|----------|----------|
+| sonar.projectKey | Unique project key in SonarQube | sonar.projectKey=com.company:myapp |
+| sonar.projectName | Display name in SonarQube dashboard | sonar.projectName=My Application |
+| sonar.projectVersion | Version of the project | sonar.projectVersion=1.0.0 |
+| sonar.sources | Source folder path | sonar.sources=src/main/java |
+| sonar.tests | Test folder path | sonar.tests=src/test/java |
+| sonar.java.binaries | Compiled class files path (Java) | sonar.java.binaries=target/classes |
+| sonar.sourceEncoding | File encoding | sonar.sourceEncoding=UTF-8 |
+| sonar.exclusions | Paths to exclude | sonar.exclusions=**/target/**,**/test/** |
+| sonar.coverage.jacoco.xmlReportPaths | Test coverage report | sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml |
+
+4. SAMPLE sonar-project.properties FILE (Java + Maven Project):
+
+# sonar-project.properties
+
+# Project identification
+sonar.projectKey=com.company:myapp
+sonar.projectName=My Application
+sonar.projectVersion=1.0.0
+
+# Source code location
+sonar.sources=src/main/java
+sonar.tests=src/test/java
+
+# Compiled bytecode (for Java projects)
+sonar.java.binaries=target/classes
+
+# Encoding and exclusions
+sonar.sourceEncoding=UTF-8
+sonar.exclusions=**/target/**,**/test/**
+
+# Coverage report (optional)
+sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+
+5. JENKINS PIPELINE EXAMPLE:
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/your/repo.git'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('MySonar') {
+                    sh 'sonar-scanner'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+}
+
+6. SUMMARY:
+- sonar-project.properties is used by developers to define how SonarQube analyzes their project.
+- Stored in version control alongside the code.
+- Jenkins reads it automatically during a sonar-scanner run.
+- Combined with Quality Gates, it can fail the build if quality standards aren’t met.

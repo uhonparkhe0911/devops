@@ -8,6 +8,7 @@ Plugins
     ECR
     aws sdk for credentials
 
+
 Jenkins
     Store aws keys(Credentials)
     Install docker engine in jenkins node
@@ -15,4 +16,5 @@ Jenkins
     Install aws cli on node
 
 ECS
+    Create ECS Service
  

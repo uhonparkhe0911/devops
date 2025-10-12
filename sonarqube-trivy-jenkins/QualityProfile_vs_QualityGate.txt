@@ -1,0 +1,40 @@
+DIFFERENCE BETWEEN QUALITY PROFILE AND QUALITY GATE
+
+1. QUALITY PROFILE (QP):
+- Defines which rules are applied during code analysis.
+- Controls *what to check* (e.g., code style, vulnerabilities, code smells).
+- Used for scanning and reporting only.
+- Does not fail the build directly.
+
+Example:
+A Java Quality Profile might include rules like:
+  - No unused imports
+  - Avoid empty catch blocks
+  - Passwords should not be hardcoded
+  - Classes should have Javadoc comments
+
+2. QUALITY GATE (QG):
+- Defines pass/fail criteria for project quality.
+- Controls *how good code must be* to pass.
+- Based on metrics like coverage, issues, duplication, reliability, etc.
+- Determines whether the Jenkins build passes or fails.
+
+Example Quality Gate Conditions:
+  - New Bugs = 0
+  - New Vulnerabilities = 0
+  - Coverage on New Code >= 80%
+  - Duplicated Lines < 3%
+  - Maintainability Rating = A
+  - Security Rating = A
+
+3. KEY DIFFERENCE:
+- QP = Defines *rules to check* during scan.
+- QG = Defines *thresholds to pass/fail* after scan.
+
+4. RELATIONSHIP:
+Even if Quality Profile finds some rule violations, the build can still pass
+if the Quality Gate thresholds are met.
+
+5. SUMMARY:
+- Quality Profile → What is analyzed.
+- Quality Gate → Whether the overall quality is acceptable.

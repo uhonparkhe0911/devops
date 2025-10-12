@@ -1,0 +1,103 @@
+TRIVY - VULNERABILITY AND SECURITY SCANNER
+
+1. Overview:
+Trivy is an open-source vulnerability scanner by Aqua Security.
+It scans Docker images, file systems, IaC configurations, and repositories
+for CVEs, misconfigurations, and secrets.
+
+2. Setup using Docker:
+    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image nginx:latest
+
+OR install natively:
+    sudo apt install trivy
+
+3. Jenkins Integration:
+
+Option 1: Simple Shell Stage
+--------------------------------------------------
+stage('Trivy Scan') {
+    steps {
+        sh '''
+        trivy image --exit-code 1 --severity HIGH,CRITICAL myapp:latest
+        '''
+    }
+}
+--------------------------------------------------
+
+Option 2: Generate and Publish Reports
+--------------------------------------------------
+stage('Trivy Scan') {
+    steps {
+        sh '''
+        trivy image --exit-code 1 --severity HIGH,CRITICAL         --format html -o trivy-report.html myapp:latest
+        '''
+    }
+}
+
+stage('Publish Reports') {
+    steps {
+        publishHTML(target: [
+            reportDir: '.',
+            reportFiles: 'trivy-report.html',
+            reportName: 'Trivy Vulnerability Report'
+        ])
+    }
+}
+--------------------------------------------------
+
+4. Combined Pipeline (SonarQube + Trivy):
+--------------------------------------------------
+pipeline {
+    agent any
+    tools { maven 'Maven' }
+    environment { SONARQUBE = credentials('sonarqube-token') }
+
+    stages {
+        stage('Checkout') { steps { git 'https://github.com/your/repo.git' } }
+        stage('Build') { steps { sh 'mvn clean package' } }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('MySonar') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps { sh 'docker build -t myapp:latest .' }
+        }
+
+        stage('Trivy Scan') {
+            steps {
+                sh '''
+                trivy image --exit-code 1 --severity HIGH,CRITICAL                 --format html -o trivy-report.html myapp:latest
+                '''
+            }
+        }
+
+        stage('Publish Security Report') {
+            steps {
+                publishHTML(target: [
+                    reportDir: '.',
+                    reportFiles: 'trivy-report.html',
+                    reportName: 'Trivy Report'
+                ])
+            }
+        }
+    }
+}
+--------------------------------------------------
+
+5. Benefits:
+- Detects vulnerabilities early before deployment.
+- Integrates easily into CI/CD pipelines.
+- Ensures container image and dependency security.

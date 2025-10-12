@@ -1,0 +1,66 @@
+SONARQUBE - CODE QUALITY & STATIC ANALYSIS
+
+1. Overview:
+SonarQube is a static code analysis tool that checks for bugs, vulnerabilities,
+code smells, and maintainability issues. It supports multiple programming languages.
+
+2. Setup using Docker:
+    docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
+Access: http://localhost:9000  (default: admin/admin)
+
+3. Jenkins Integration Steps:
+   a. Install Plugins:
+      - SonarQube Scanner
+      - Quality Gates Plugin
+
+   b. Configure Jenkins:
+      Manage Jenkins -> Configure System -> SonarQube Servers
+      Add server URL and authentication token (from SonarQube UI).
+
+   c. Configure Scanner:
+      Manage Jenkins -> Global Tool Configuration -> SonarQube Scanner
+
+4. Example Jenkins Pipeline:
+--------------------------------------------------
+pipeline {
+    agent any
+
+    tools {
+        sonarQube 'SonarScanner'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps { git 'https://github.com/your/repo.git' }
+        }
+
+        stage('Build') {
+            steps { sh 'mvn clean install' }
+        }
+
+        stage('SonarQube Analysis') {
+            environment {
+                SONARQUBE = credentials('sonarqube-token')
+            }
+            steps {
+                withSonarQubeEnv('MySonar') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+}
+--------------------------------------------------
+
+5. Benefits:
+- Detects code issues early in CI/CD.
+- Enforces coding standards and quality gates.
+- Integrates with multiple build tools (Maven, Gradle, etc.).

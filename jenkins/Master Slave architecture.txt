@@ -1,0 +1,137 @@
+⚙️ Jenkins Master-Slave Architecture — Complete Guide
+
+🧩 What is Master-Slave in Jenkins?
+Jenkins can distribute its build workload across multiple machines.
+- Master (Controller):
+  - Manages Jenkins environment
+  - Schedules jobs, manages configuration, dispatches builds, aggregates results
+  - Can run builds itself, but not recommended for heavy loads
+- Slave (Agent / Node):
+  - Executes jobs sent by the master
+  - Can run builds on different OS, architecture, or environments
+  - Helps scale Jenkins horizontally
+
+Why Use Master-Slave?
+- Handle high build volume
+- Run builds on specific OS or environment
+- Isolate heavy builds from master
+- Support parallel builds
+
+------------------------------------------------------
+
+Jenkins Architecture Diagram
+
+          +-------------------+
+          |      Master       |
+          |-------------------|
+          | Job Scheduler     |
+          | Configuration Mgmt|
+          | Dispatch Builds   |
+          +---------+---------+
+                    |
+         ------------------------
+         |          |           |
+      +-----+    +-----+     +-----+
+      |Slave|    |Slave|     |Slave|
+      +-----+    +-----+     +-----+
+   Build Env1  Build Env2  Build Env3
+
+------------------------------------------------------
+
+Types of Nodes
+1. Master (Controller)
+2. Permanent Slaves
+3. Temporary / Cloud Nodes
+
+------------------------------------------------------
+
+Steps to Configure a Slave Node
+
+Step 1: Prepare Slave Machine
+- Install Java
+- Ensure network connectivity to master
+- Open firewall for Jenkins port (default 8080)
+
+Step 2: Add Node in Jenkins Master
+1. Manage Jenkins → Manage Nodes → New Node
+2. Provide:
+   - Node name
+   - Node type
+   - Remote root directory
+   - Labels (optional)
+   - Number of executors
+3. Save
+
+Step 3: Launch Slave Agent
+- Launch agent via Java Web Start (JNLP)
+  java -jar agent.jar -jnlpUrl http://<jenkins-master>:8080/computer/<node-name>/slave-agent.jnlp -secret <secret-key>
+- Launch agent via SSH (Master connects automatically)
+
+Step 4: Verify Node Connection
+- Node status should be online
+
+------------------------------------------------------
+
+Assign Jobs to Slave Nodes
+- Use "Restrict where this project can be run"
+- Enter node label
+Example:
+Job A → Label: linux-agent1 → Runs on Linux slave
+Job B → Label: windows-agent → Runs on Windows slave
+
+------------------------------------------------------
+
+Example: Running a Maven Build on Slave
+- Job type: Freestyle or Pipeline
+- Restrict to node: linux-agent1
+- Build step: mvn clean install
+- Result: Build executes on slave, master stays free
+
+------------------------------------------------------
+
+Pipeline Example Using Slave
+
+pipeline {
+    agent { label 'linux-agent1' }
+    stages {
+        stage('Build') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+    }
+}
+
+------------------------------------------------------
+
+Best Practices
+- Master should not run heavy builds
+- Label nodes clearly
+- Use multiple slaves for parallel builds
+- Use temporary/cloud nodes for scalability
+- Monitor node health
+- Secure slave connection (SSH keys or JNLP)
+
+------------------------------------------------------
+
+Advantages of Master-Slave Setup
+- Scalability: multiple slaves for parallel builds
+- Environment segregation: different OS/tools
+- Load distribution: master handles orchestration
+- Flexibility: add/remove slaves dynamically
+
+------------------------------------------------------
+
+Summary Table
+
+| Component | Role |
+|-----------|------|
+| Master | Job scheduling, configuration, dispatching |
+| Slave | Executes builds, reports results |
+| Executors | Number of parallel jobs a node can run |
+| Labels | Restrict job execution to specific nodes |
