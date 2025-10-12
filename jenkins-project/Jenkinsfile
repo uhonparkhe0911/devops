@@ -1,0 +1,89 @@
+@Library('uh-jenkins-shared-lib') //https://github.com/uhonparkhe0911/jenkins_shared_library_uh.git
+pipeline {
+    agent any
+    parameters {
+        choice( name: 'action' , choices: ['create', 'delete'], description: 'Choose Create/Delete' )
+        string(name: 'WORK_DIR', defaultValue: 'jenkins-project', description: 'Relative directory path where Maven commands should run')
+    }
+    stages {
+        stage('Git Checkout') {
+            when { expression { params.action == 'create' } }
+                steps {
+                    // Calling the function present in above shared library
+                    gitCheckout(
+                            branch: 'main',
+                    url: 'https://github.com/uhonparkhe0911/devops.git'
+                    )     
+                }
+        }
+
+        stage('Maven: Unit Test') {
+            when { expression { params.action == 'create' } }
+                steps {
+                    script {
+                        mvnTest(directory: params.WORK_DIR)
+                    }
+                }
+        }
+
+        stage('Maven: Integration Test') {
+            when { expression { params.action == 'create' } }
+                steps {
+                    script {
+                        mvnIntegrationTest(directory: params.WORK_DIR)
+                    }
+                }
+        }
+
+        stage('Sonarqube : Static code analysis'){
+         when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                   def SonarQubecredentialsId = 'sonarqube-api'
+                   staticCodeAnalysis([
+                    SonarQubecredentialsId,
+                    directory: params.WORK_DIR
+                   ])
+               }
+            }
+       }
+
+       stage('Sonarqube : Quality Gate Status Check'){
+         when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                   def SonarQubecredentialsId = 'sonarqube-api'
+                   qualityGateStatus(SonarQubecredentialsId)
+               }
+            }
+       }
+
+       stage('Maven : Build'){
+         when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                   mvnBuild(directory: params.WORK_DIR)
+               }
+            }
+        }
+
+        stage('Docker : Image Build'){
+         when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                   dockerBuild("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}", "${params.WORK_DIR}")
+               }
+            }
+        }
+
+        stage('DockerHub : Docker Image Push'){
+         when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                   dockerImagePush("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
+               }
+            }
+        }
+
+    }
+}
