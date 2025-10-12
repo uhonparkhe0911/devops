@@ -1,5 +1,7 @@
-@Library('uh-jenkins-shared-lib') //https://github.com/uhonparkhe0911/jenkins_shared_library_uh.git
-pipeline {
+@Library('uh-jenkins-shared-lib') _
+//https://github.com/uhonparkhe0911/jenkins_shared_library_uh.git
+
+pipeline{
     agent any
     parameters {
         choice( name: 'action' , choices: ['create', 'delete'], description: 'Choose Create/Delete' )
