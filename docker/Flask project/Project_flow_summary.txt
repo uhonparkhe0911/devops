@@ -1,0 +1,83 @@
+Flask + MySQL + Nginx (Docker Compose) Project Flow Summary
+====================================================
+
+Overview
+---------
+This project demonstrates how to containerize a simple Flask web application,
+connect it to a MySQL database, and serve it using Nginx as a reverse proxy — all
+orchestrated using Docker Compose.
+
+----------------------------------------------------
+
+Flow Summary
+-------------
+1. **User Request**
+   - A user sends a request via browser to the Nginx server (port 8080).
+
+2. **Nginx (Reverse Proxy)**
+   - Nginx listens on port 8080 (mapped to port 80 inside container).
+   - It forwards incoming HTTP requests to the Flask container (port 5000).
+   - Nginx improves performance, handles routing, and separates concerns from the Flask app.
+
+3. **Flask Application**
+   - The Flask container hosts the Python web application (app.py).
+   - It receives the request from Nginx and processes the logic defined in routes (`/`, `/reservation`, etc.).
+   - If needed, it connects to the MySQL container to fetch/store data.
+
+4. **MySQL Database**
+   - The MySQL container acts as the backend database.
+   - Flask connects to it using environment variables defined in docker-compose.yml.
+   - Data persistence is handled using Docker volumes (`db_data`).
+
+5. **Response Flow**
+   - Flask processes data → sends back HTML/JSON response → Nginx forwards it → Browser displays the result.
+
+----------------------------------------------------
+
+Flow Diagram (Simplified)
+-------------------------
+Browser (User)
+     │
+     ▼
+Nginx (port 8080 → 80 inside container)
+     │
+     ▼
+Flask App (port 5000)
+     │
+     ▼
+MySQL Database (port 3306)
+
+----------------------------------------------------
+
+AWS EC2 Deployment (For Learning)
+---------------------------------
+1. Launch EC2 instance (Ubuntu recommended)
+2. Install Docker and Docker Compose
+3. Copy project files to EC2 (via SCP)
+4. Run `docker-compose up -d --build`
+5. Open port 8080 in EC2 Security Group
+6. Access app at: http://<EC2-public-IP>:8080
+
+----------------------------------------------------
+
+Database Testing (Optional)
+---------------------------
+- To test DB connectivity from Flask, add a `/dbtest` route that executes a simple SQL query.
+- To connect manually:
+  ```bash
+  docker exec -it mysql_db mysql -uroot -psecretpass testdb
+  ```
+
+----------------------------------------------------
+
+Learning Points
+----------------
+✅ Flask app containerization  
+✅ MySQL container linking and networking  
+✅ Nginx reverse proxy setup  
+✅ Docker Compose orchestration  
+✅ Using environment variables for config  
+✅ Deploying containers on AWS EC2  
+✅ Testing routes and database integration  
+
+----------------------------------------------------
