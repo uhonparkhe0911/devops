@@ -1,0 +1,121 @@
+JENKINS_HOME DIRECTORY DETAILS
+
+1. OVERVIEW
+------------
+The JENKINS_HOME directory is the main data directory for Jenkins. It stores configurations, jobs, plugins, secrets, and logs.
+If deleted, Jenkins loses all its configuration and job history.
+
+Default locations:
+- Linux: /var/lib/jenkins
+- Windows: C:\ProgramData\Jenkins\.jenkins or C:\Users\<username>\.jenkins
+- Mac: /Users/<username>/.jenkins
+
+You can view it in Jenkins UI:
+Manage Jenkins → Configure System → Home Directory
+
+---
+
+2. DIRECTORY STRUCTURE
+-----------------------
+$JENKINS_HOME/
+├── config.xml
+├── credentials.xml
+├── identity.key.enc
+├── jobs/
+│   ├── <job-name>/
+│   │   ├── config.xml
+│   │   ├── builds/
+│   │   ├── workspace/
+├── logs/
+├── plugins/
+├── secrets/
+├── users/
+├── workspace/
+
+---
+
+3. IMPORTANT FILES AND FOLDERS
+-------------------------------
+| Path | Description |
+|------|--------------|
+| config.xml | Global Jenkins configuration. |
+| jobs/ | Each job has its own folder with job config and builds. |
+| plugins/ | Installed plugins (.jpi files). |
+| workspace/ | Working directories for builds. |
+| secrets/ | Stores encrypted credentials and master keys. |
+| credentials.xml | Encrypted credentials storage. |
+| logs/ | System and job logs. |
+| users/ | Jenkins user data. |
+| updates/ | Plugin update data. |
+
+---
+
+4. JOB CONFIGURATION EXAMPLE
+-----------------------------
+Each Jenkins job has its own config.xml inside $JENKINS_HOME/jobs/<job-name>/
+
+Example:
+<project>
+  <description>Build Java project</description>
+  <scm class="hudson.plugins.git.GitSCM">
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>https://github.com/example/repo.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+  </scm>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>mvn clean package</command>
+    </hudson.tasks.Shell>
+  </builders>
+</project>
+
+---
+
+5. CONFIG.XML FILE DETAILS
+---------------------------
+There are two key config.xml files:
+1. $JENKINS_HOME/config.xml — global Jenkins settings.
+2. $JENKINS_HOME/jobs/<job-name>/config.xml — specific job configuration.
+
+---
+
+6. SECRETS DIRECTORY
+---------------------
+$JENKINS_HOME/secrets contains:
+- master.key: used for decrypting credentials
+- hudson.util.Secret: secret key storage
+- initialAdminPassword: shown during first setup
+
+---
+
+7. BACKUP AND RESTORE
+----------------------
+Backup Jenkins by copying $JENKINS_HOME entirely.
+
+Critical files:
+- config.xml
+- jobs/
+- plugins/
+- secrets/
+- credentials.xml
+
+To restore, copy the backup to the same path and restart Jenkins.
+
+---
+
+8. BEST PRACTICES
+------------------
+✅ Keep $JENKINS_HOME backed up.  
+✅ Don’t edit XML files manually while Jenkins is running.  
+✅ Use “Reload Configuration from Disk” after changes.  
+✅ Secure secrets/credentials files.  
+✅ Clean workspace regularly.
+
+---
+
+SUMMARY
+--------
+$JENKINS_HOME is the heart of Jenkins — it contains all configurations, jobs, plugins, and secrets.  
+Always back it up before any upgrade or migration.

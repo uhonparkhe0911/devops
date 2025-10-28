@@ -1,0 +1,39 @@
+version: "3.9"
+services: 
+  web:
+    build: ./app
+    container_name: flask_app
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=secretpass
+      - MYSQL_DB=testdb
+    depends_on:
+      - db
+    expose:
+      - "5000"
+    restart: always
+
+  db:
+    image: mysql:5.7
+    container_name: mysql_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=secretpass
+      - MYSQL_DATABASE=testdb
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_proxy
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - web
+    ports:
+      - "8080:80"
+    restart: always
+
+volumes:
+  db_data:

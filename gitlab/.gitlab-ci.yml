@@ -1,0 +1,78 @@
+stages:
+  - build
+  - test
+  - security
+  - notify
+variables:
+  PROJECT_NAME: vprofile
+  JAVA_OPTS: ${JAVA_OPTIONS}
+
+#Build stage
+build-job:
+  stage: build
+  image: maven:3.9.11-eclipse-temurin-17
+  # only:
+  #   - main
+  rules:
+    # Trigger on pushes to main or develop branch
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    # Trigger on merge requests or when started manually
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "web"'
+    # Trigger on scheduled pipelines
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    # Otherwise never run
+    - when: never
+  script: 
+    - echo "Building the project ${PROJECT_NAME}"
+    - echo "Java options are ${JAVA_OPTS}"
+    - echo "My Secret is that ${MY_SECRET}"
+    - echo "Source of the pipeline trigger is ${CI_PIPELINE_SOURCE} for branch ${CI_COMMIT_BRANCH}"
+    - mvn install
+  artifacts:
+    paths:
+      - target/*.war
+    when: always
+
+#Test stage
+test-job:
+  stage: test
+  image: maven:3.9.11-eclipse-temurin-17
+  # only:
+  #   - main
+  needs: [build-job]
+  rules:
+    # Trigger on pushes to main or develop branch
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    # Trigger on merge requests or when started manually
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "web"'
+    # Trigger on scheduled pipelines
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    # Otherwise never run
+    - when: never
+  script: 
+    - echo "Running Unit Test in the project..."
+    - mvn test
+    - mvn checkstyle:checkstyle
+
+security-scan-job:
+  stage: security
+  image: 
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  needs: [build-job]
+  script:
+    - echo "Running Security Scan in the project..."
+    #- trivy fs --format json --exit-code 1 --severity MEDIUM,HIGH,CRITICAL --vuln-type os,library --output trivy-results.json
+    - trivy fs --format json --exit-code 0 --vuln-type os,library --output trivy-results.json
+  after_script:
+    - ls -la
+  artifacts:
+    paths:
+      - target/vpro
+    when: always
+
+notify-on-failure-job:
+  stage: notify
+  script:
+    - echo "Build or test job failed for $(PROECT_NAME)! Please check logs."
+  when: on_failure #Only runs if any job fails!
