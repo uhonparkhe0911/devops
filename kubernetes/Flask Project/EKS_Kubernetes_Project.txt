@@ -1,0 +1,139 @@
+EKS_Kubernetes_Project.txt
+=================================
+
+Flask + MySQL + Nginx on AWS EKS (Kubernetes Extension Project)
+===============================================================
+
+Overview
+--------
+This project extends the existing Docker Compose setup (Flask + MySQL + Nginx) into a full-fledged Kubernetes deployment on AWS EKS.
+You’ll build and push your Docker image, create a minimal-cost EKS cluster, and deploy using essential Kubernetes components.
+
+------------------------------------------------------------
+STEP 1: Build and Push Docker Image for Flask App
+------------------------------------------------------------
+1. Navigate to the app folder (contains Dockerfile):
+   cd myproject/app
+
+2. Build image:
+   docker build -t <your_dockerhub_username>/flask-app:v1 .
+
+   Example:
+   docker build -t utkarshhonparkhe/flask-app:v1 .
+
+3. Verify image:
+   docker images
+
+4. Test locally:
+   docker run -d -p 5000:5000 <your_dockerhub_username>/flask-app:v1
+   Access: http://localhost:5000
+
+5. Push image to Docker Hub:
+   docker login
+   docker push <your_dockerhub_username>/flask-app:v1
+
+------------------------------------------------------------
+STEP 2: AWS EKS Cluster Setup (2-node minimal setup)
+------------------------------------------------------------
+1. Install tools (if not already installed):
+   - AWS CLI
+   - eksctl
+   - kubectl
+
+2. Configure AWS credentials:
+   aws configure
+
+3. Create cluster (2 small nodes):
+   eksctl create cluster \
+     --name barista-cluster \
+     --region ap-south-1 \
+     --nodegroup-name barista-nodes \
+     --nodes 2 \
+     --node-type t3.small \
+     --nodes-min 2 \
+     --nodes-max 2 \
+     --managed
+
+Expected runtime cost: ₹10–₹25 for few hours usage.
+
+------------------------------------------------------------
+STEP 3: Kubernetes Components Overview
+------------------------------------------------------------
+| Component | Description |
+|------------|-------------|
+| Namespace | Isolates this project from others |
+| ConfigMap | Stores non-sensitive config like DB name, host |
+| Secret | Stores sensitive info like MySQL password |
+| PersistentVolume / Claim | Stores MySQL data persistently |
+| Deployment | Defines pods and replicas for Flask, MySQL, Nginx |
+| ReplicaSet | Manages the desired number of pod replicas |
+| Pod | Smallest deployable container unit |
+| Service | Exposes internal (ClusterIP) and external (NodePort/LoadBalancer) access |
+| Ingress | Handles external routing with domain names |
+| Job | Runs one-time tasks (e.g., DB initialization) |
+| CronJob | Schedules periodic tasks (e.g., backups) |
+| ResourceQuota | Limits CPU, memory, and pods per namespace |
+| StatefulSet | For stateful apps like MySQL |
+| DaemonSet | Ensures system-level pods run on all nodes |
+| Volumes | Stores persistent data |
+| Taints & Tolerations | Controls pod scheduling to specific nodes |
+
+------------------------------------------------------------
+STEP 4: YAML Files to Create
+------------------------------------------------------------
+namespace.yaml
+configmap.yaml
+secret.yaml
+mysql-deployment.yaml
+flask-deployment.yaml
+nginx-deployment.yaml
+services.yaml
+(Each will contain metadata, spec, and resource definitions.)
+
+------------------------------------------------------------
+STEP 5: Apply Configuration
+------------------------------------------------------------
+kubectl apply -f namespace.yaml
+kubectl apply -f configmap.yaml
+kubectl apply -f secret.yaml
+kubectl apply -f mysql-deployment.yaml
+kubectl apply -f flask-deployment.yaml
+kubectl apply -f nginx-deployment.yaml
+kubectl apply -f services.yaml
+
+Check status:
+kubectl get pods -n barista
+kubectl get svc -n barista
+
+------------------------------------------------------------
+STEP 6: Access Application
+------------------------------------------------------------
+If Service Type = NodePort:
+   http://<EC2-node-public-ip>:<nodePort>
+
+If Service Type = LoadBalancer:
+   http://<load-balancer-dns>
+
+------------------------------------------------------------
+STEP 7: Testing & Validation
+------------------------------------------------------------
+- Check all pods running: kubectl get pods -n barista
+- Access web app using NodePort
+- Check MySQL pod logs: kubectl logs <mysql-pod> -n barista
+- Exec into Flask container: kubectl exec -it <flask-pod> -n barista -- bash
+- Verify DB connection: mysql -uroot -psecretpass -h mysql-service
+
+------------------------------------------------------------
+STEP 8: Cleanup
+------------------------------------------------------------
+eksctl delete cluster --name barista-cluster --region ap-south-1
+
+------------------------------------------------------------
+STEP 9: Key Learnings
+------------------------------------------------------------
+✅ Built and pushed Docker image to Docker Hub
+✅ Created EKS cluster on AWS
+✅ Deployed Flask, MySQL, Nginx using Kubernetes manifests
+✅ Used ConfigMaps, Secrets, PersistentVolumes, Deployments, and Services
+✅ Tested complete containerized and orchestrated setup
+✅ Practiced real-world cloud-native application workflow

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: barista-config
+  namespace: barista
+data:
+  MYSQL_HOST: db
+  MYSQL_USER: barista_user
+  MYSQL_DB: testdb

@@ -1,0 +1,142 @@
+AWS EKS Cluster Setup (Standard Mode via AWS Console)
+=====================================================
+
+Overview
+--------
+This guide explains how to manually create an Amazon EKS (Elastic Kubernetes Service) cluster using the AWS Management Console in STANDARD MODE.
+This setup gives you full control over node groups, IAM roles, and Kubernetes workloads.
+
+------------------------------------------------------------
+STEP 1: Configure AWS CLI
+------------------------------------------------------------
+Before connecting to EKS using kubectl, configure AWS CLI.
+
+1. Open terminal and run:
+   aws configure
+
+2. Enter your AWS credentials:
+   - AWS Access Key ID: <your-access-key>
+   - AWS Secret Access Key: <your-secret-key>
+   - Default region name: ap-south-1
+   - Default output format: json
+
+To verify configuration:
+   aws sts get-caller-identity
+
+------------------------------------------------------------
+STEP 2: Create EKS Cluster (Control Plane)
+------------------------------------------------------------
+1. Go to https://console.aws.amazon.com/eks
+2. Click "Add cluster" → "Create".
+3. Select **Standard** mode.
+4. Cluster name: barista-cluster
+5. Kubernetes version: Choose the latest stable version.
+
+### Create Cluster IAM Role:
+   - Go to IAM → Roles → Create role
+   - Select “EKS” as the use case.
+   - Attach the following policies:
+       • AmazonEKSClusterPolicy
+       • AmazonEKSServicePolicy
+   - Name the role: EKSClusterRole
+
+6. Back in the EKS wizard:
+   - Select the **EKSClusterRole** you just created.
+   - Leave logging, tags, and VPC settings as default.
+7. Click **Next** → **Create**.
+
+Wait ~10 minutes for AWS to create the EKS control plane.
+
+------------------------------------------------------------
+STEP 3: Create Node Group (Worker Nodes)
+------------------------------------------------------------
+Once the cluster status becomes **Active**:
+
+1. Go to the **Compute** tab → **Add Node Group**.
+2. Node group name: barista-nodes
+
+### Create Node IAM Role:
+   - Go to IAM → Roles → Create role
+   - Select “EC2” as the use case.
+   - Attach the following policies:
+       • AmazonEKSWorkerNodePolicy
+       • AmazonEKS_CNI_Policy
+       • AmazonEC2ContainerRegistryReadOnly
+   - Name it: EKSNodeRole
+
+3. Back in the wizard:
+   - Choose this **EKSNodeRole**.
+   - Instance type: t3.small
+   - Desired size: 2 nodes
+   - Subnets: Select all default ones
+   - AMI type: Amazon Linux 2 (AL2_x86_64)
+4. Click **Next** → **Create**.
+
+Wait 5–7 minutes until both nodes show as **Ready**.
+
+------------------------------------------------------------
+STEP 4: Connect kubectl to EKS
+------------------------------------------------------------
+Once cluster and nodes are ready:
+
+1. Run the following command:
+   aws eks update-kubeconfig --region ap-south-1 --name barista-cluster
+
+2. Verify cluster connection:
+   kubectl get nodes
+
+Expected output:
+NAME                                         STATUS   ROLES    AGE   VERSION
+ip-10-0-1-23.ap-south-1.compute.internal     Ready    <none>   5m    v1.30.x
+
+------------------------------------------------------------
+STEP 5: Test Deployment
+------------------------------------------------------------
+Deploy a simple NGINX pod and expose it.
+
+1. Run:
+   kubectl run nginx --image=nginx
+   kubectl expose pod nginx --port=80 --type=LoadBalancer
+
+2. Verify deployment:
+   kubectl get pods
+   kubectl get svc
+
+Wait 1–2 minutes for LoadBalancer external IP to appear, then open in your browser to see the NGINX welcome page.
+
+------------------------------------------------------------
+STEP 6: Deploy Your Flask + MySQL + Nginx App (Optional)
+------------------------------------------------------------
+kubectl apply -f namespace.yaml
+kubectl apply -f configmap.yaml
+kubectl apply -f secret.yaml
+kubectl apply -f mysql-deployment.yaml
+kubectl apply -f flask-deployment.yaml
+kubectl apply -f nginx-deployment.yaml
+kubectl apply -f services.yaml
+
+Check status:
+kubectl get pods -n barista
+kubectl get svc -n barista
+
+------------------------------------------------------------
+STEP 7: Cleanup (To Avoid Extra Charges)
+------------------------------------------------------------
+When done testing, delete all resources:
+
+Option 1 - AWS Console:
+- Delete node group (Compute → Node groups → Delete)
+- Delete cluster (EKS → barista-cluster → Delete)
+
+Option 2 - CLI:
+eksctl delete cluster --name barista-cluster --region ap-south-1
+
+------------------------------------------------------------
+✅ Summary
+------------------------------------------------------------
+✔ Created EKS cluster in Standard Mode via AWS Console
+✔ Configured Cluster and Node IAM Roles
+✔ Created Node Group with EC2 instances
+✔ Connected kubectl using AWS CLI
+✔ Deployed and tested workloads
+✔ Cleaned up resources to minimize cost

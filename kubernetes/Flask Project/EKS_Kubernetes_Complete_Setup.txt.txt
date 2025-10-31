@@ -1,0 +1,358 @@
+EKS_Kubernetes_Complete_Setup.txt
+===================================
+
+Flask + MySQL + Nginx on AWS EKS
+===================================
+
+This file contains complete Kubernetes YAML manifests and instructions
+to deploy your Flask + MySQL + Nginx app to AWS EKS.
+
+------------------------------------------------------------
+1️⃣  NAMESPACE
+------------------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: barista
+
+
+------------------------------------------------------------
+2️⃣  CONFIGMAP
+------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: barista-config
+  namespace: barista
+data:
+  MYSQL_HOST: "mysql"
+  MYSQL_USER: "root"
+  MYSQL_DB: "barista_db"
+  FLASK_ENV: "production"
+
+Purpose:
+- Stores non-sensitive environment variables for Flask & MySQL
+- Values are injected into containers as environment variables
+
+
+------------------------------------------------------------
+3️⃣  SECRET
+------------------------------------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: barista
+type: Opaque
+data:
+  MYSQL_PASSWORD: c2VjcmV0cGFzcw==   # base64("secretpass")
+
+Purpose:
+- Stores sensitive credentials securely (Base64 encoded)
+- Replaces plaintext passwords in ConfigMaps or source code
+
+
+------------------------------------------------------------
+4️⃣  MYSQL STATEFULSET (with Persistent Storage)
+------------------------------------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: barista
+spec:
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: barista-config
+                  key: MYSQL_DB
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+
+Purpose:
+- Ensures persistent data storage for MySQL using PVCs
+- Each replica gets its own persistent volume
+- Best practice for database workloads
+
+
+------------------------------------------------------------
+5️⃣  FLASK DEPLOYMENT
+------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  namespace: barista
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+        - name: flask
+          image: <your_dockerhub_username>/flask-app:v1
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: barista-config
+          env:
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "web"
+          effect: "NoSchedule"
+
+Purpose:
+- Runs your Flask web app
+- Injects environment variables from ConfigMap and Secret
+- Uses toleration to allow scheduling on specific nodes (optional)
+
+
+------------------------------------------------------------
+6️⃣  NGINX DEPLOYMENT (Reverse Proxy)
+------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: barista
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: barista
+data:
+  default.conf: |
+    server {
+      listen 80;
+      location / {
+        proxy_pass http://flask-service:5000;
+      }
+    }
+
+Purpose:
+- Nginx serves as a reverse proxy to Flask
+- Routes all traffic to Flask service inside the cluster
+
+
+------------------------------------------------------------
+7️⃣  SERVICES
+------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: barista
+spec:
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+      targetPort: 3306
+  clusterIP: None  # For StatefulSet
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-service
+  namespace: barista
+spec:
+  selector:
+    app: flask
+  ports:
+    - port: 5000
+      targetPort: 5000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: barista
+spec:
+  selector:
+    app: nginx
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
+
+Purpose:
+- MySQL service: headless (for StatefulSet)
+- Flask service: internal (ClusterIP)
+- Nginx service: external entry point (LoadBalancer)
+
+
+------------------------------------------------------------
+8️⃣  INGRESS (Optional Domain Routing)
+------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: barista-ingress
+  namespace: barista
+spec:
+  rules:
+    - host: barista.mydomain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
+
+Purpose:
+- Maps an external domain (like barista.mydomain.com) to internal service
+- Optional when using AWS LoadBalancer service
+
+
+------------------------------------------------------------
+9️⃣  RESOURCE QUOTA
+------------------------------------------------------------
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: barista-quota
+  namespace: barista
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    pods: "10"
+
+Purpose:
+- Controls total resource usage within this namespace
+
+
+------------------------------------------------------------
+🔟  TAINTS & TOLERATIONS (Optional)
+------------------------------------------------------------
+# Example Node Taint:
+kubectl taint nodes <node-name> dedicated=db:NoSchedule
+
+# Add in mysql-statefulset.yaml:
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "db"
+    effect: "NoSchedule"
+
+Purpose:
+- Ensures MySQL pod runs only on specific tainted nodes
+
+
+------------------------------------------------------------
+✅ APPLY ALL YAML FILES
+------------------------------------------------------------
+kubectl apply -f namespace.yaml
+kubectl apply -f configmap.yaml
+kubectl apply -f nginx-configmap.yaml
+kubectl apply -f secret.yaml
+kubectl apply -f resourcequota.yaml
+kubectl apply -f mysql-statefulset.yaml
+kubectl apply -f flask-deployment.yaml
+kubectl apply -f nginx-deployment.yaml
+kubectl apply -f services.yaml
+kubectl apply -f ingress.yaml
+
+
+------------------------------------------------------------
+🔍 VERIFY DEPLOYMENT
+------------------------------------------------------------
+kubectl get pods -n barista
+kubectl get svc -n barista
+kubectl get ingress -n barista
+
+Access Application:
+- LoadBalancer: http://<load-balancer-dns>
+- NodePort (if used): http://<EC2-node-public-ip>:<nodePort>
+
+
+------------------------------------------------------------
+📘 WHY USE CONFIGMAP & SECRET (even with hardcoded code)
+------------------------------------------------------------
+Even if your Flask `app.py` has hardcoded DB values, in Kubernetes you use
+ConfigMaps and Secrets to make it flexible and cloud-ready.
+
+Reason:
+- You can override environment variables at runtime without changing code.
+- Makes your image reusable across dev, test, prod environments.
+- Secrets encrypt sensitive data.
+- Follows 12-Factor App methodology (separate config from code).
+
+So, in Kubernetes:
+Your `app.py` will read values from `os.getenv()`
+which are injected via ConfigMap & Secret.
+
+------------------------------------------------------------
+🏁 END OF FILE
+------------------------------------------------------------
